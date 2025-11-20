@@ -59,7 +59,6 @@ function initGame() {
     updateTimerDisplay(); // 初始化计时器显示
     
     // 绑定事件
-    document.getElementById('startBtn').addEventListener('click', startGame);
     document.getElementById('mineBtn').addEventListener('click', mineBlock);
     document.getElementById('moveUpBtn').addEventListener('click', () => movePlayer(0, -1));
     document.getElementById('moveLeftBtn').addEventListener('click', () => movePlayer(-1, 0));
@@ -70,8 +69,13 @@ function initGame() {
     // 添加键盘控制
     document.addEventListener('keydown', handleKeyPress);
     
-    // 添加鼠标点击放置方块的功能
-    document.getElementById('gameBoard').addEventListener('click', placeBlock);
+    // Show controls since the start button is removed - controls are available immediately
+    document.getElementById('mineBtn').style.display = 'inline-block';
+    document.getElementById('moveUpBtn').style.display = 'inline-block';
+    document.getElementById('moveLeftBtn').style.display = 'inline-block';
+    document.getElementById('moveRightBtn').style.display = 'inline-block';
+    document.getElementById('moveDownBtn').style.display = 'inline-block';
+    document.getElementById('exitBtn').style.display = 'inline-block';
 }
 
 // 创建游戏板
@@ -463,47 +467,6 @@ function handleKeyPress(event) {
 }
 
 // 放置方块
-function placeBlock(event) {
-    // 检查点击的是否是空方块
-    if (event.target.classList.contains('mined')) {
-        const x = parseInt(event.target.dataset.x);
-        const y = parseInt(event.target.dataset.y);
-        
-        // 检查玩家是否在相邻位置
-        const dx = Math.abs(x - gameState.playerPosition.x);
-        const dy = Math.abs(y - gameState.playerPosition.y);
-        
-        // 只有在玩家相邻时才能放置方块
-        if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
-            // 优先放置方块的顺序：铁矿石 > 钻石 > TNT > 反物质TNT
-            if (gameState.inventory.iron > 0) {
-                gameState.board[y][x] = BLOCK_TYPES.IRON_ORE;
-                gameState.inventory.iron--;
-            } else if (gameState.inventory.diamond > 0) {
-                gameState.board[y][x] = BLOCK_TYPES.DIAMOND_ORE;
-                gameState.inventory.diamond--;
-                // 重新设置方块状态
-                const positionKey = `${x},${y}`;
-                gameState.blockStates[positionKey] = { type: BLOCK_TYPES.DIAMOND_ORE, hitsLeft: 1 };
-            } else if (gameState.inventory.tnt > 0) {
-                gameState.board[y][x] = BLOCK_TYPES.TNT;
-                gameState.inventory.tnt--;
-            } else if (gameState.inventory.antimatterTnt > 0) {
-                gameState.board[y][x] = BLOCK_TYPES.ANTIMATTER_TNT;
-                gameState.inventory.antimatterTnt--;
-            } else {
-                // 播放错误音效
-                playErrorSound();
-                return;
-            }
-            
-            // 更新显示
-            updateStats();
-            renderBoard();
-        }
-    }
-}
-
 // 怪物自主移动和攻击玩家
 function moveMonsters() {
     // 遍历整个游戏板
@@ -876,22 +839,7 @@ function gameOverTimeout() {
     }, 500);
 }
 
-// 开始游戏
-function startGame() {
-    // 重置游戏状态
-    resetGame();
-    
-    // 注意：计时器将在第一次挖掘方块时启动
-    
-    // 显示控制按钮，隐藏开始按钮
-    document.getElementById('startBtn').style.display = 'none';
-    document.getElementById('mineBtn').style.display = 'inline-block';
-    document.getElementById('moveUpBtn').style.display = 'inline-block';
-    document.getElementById('moveLeftBtn').style.display = 'inline-block';
-    document.getElementById('moveRightBtn').style.display = 'inline-block';
-    document.getElementById('moveDownBtn').style.display = 'inline-block';
-    document.getElementById('exitBtn').style.display = 'inline-block';
-}
+// 开始游戏 - not needed anymore since game starts automatically
 
 // 重置游戏
 function resetGame() {
@@ -922,6 +870,14 @@ function resetGame() {
     renderBoard();
     updateStats();
     updateTimerDisplay(); // 更新计时器显示
+    
+    // Show controls since the start button is removed
+    document.getElementById('mineBtn').style.display = 'inline-block';
+    document.getElementById('moveUpBtn').style.display = 'inline-block';
+    document.getElementById('moveLeftBtn').style.display = 'inline-block';
+    document.getElementById('moveRightBtn').style.display = 'inline-block';
+    document.getElementById('moveDownBtn').style.display = 'inline-block';
+    document.getElementById('exitBtn').style.display = 'inline-block';
 }
 
 // 页面加载完成后初始化游戏
@@ -995,8 +951,7 @@ function exitGame() {
             clearInterval(gameState.timer);
             gameState.timer = null;
         }
-        // 重置按钮显示状态
-        document.getElementById('startBtn').style.display = 'inline-block';
+        // 重置按钮 display states - since we removed start button, just hide all control buttons
         document.getElementById('mineBtn').style.display = 'none';
         document.getElementById('moveUpBtn').style.display = 'none';
         document.getElementById('moveLeftBtn').style.display = 'none';
