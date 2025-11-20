@@ -45,12 +45,15 @@ let gameState = {
     // 用于跟踪方块状态
     blockStates: {}, // 存储需要多次点击的方块状态
     timer: null, // 计时器
-    timeLeft: 180 // 剩余时间（秒），3分钟=180秒
+    timeLeft: 180, // 剩余时间（秒），3分钟=180秒
+    hasWon: false // 标记游戏是否已获胜
 };
 
 // 初始化游戏
 function initGame() {
     createBoard();
+    // 确保玩家初始位置是空方块，以便能够移动
+    gameState.board[7][7] = BLOCK_TYPES.EMPTY;
     renderBoard();
     updateStats();
     updateTimerDisplay(); // 初始化计时器显示
@@ -251,7 +254,6 @@ function movePlayer(dx, dy) {
             // 检查目标位置是否为水方块，如果是，则不能移动
             const targetBlockType = gameState.board[newY][newX];
             if (targetBlockType === BLOCK_TYPES.WATER) {
-                alert("无法移动到水方块！");
                 return;
             }
             // 可以移动到目标位置（除了水方块外的任何方块）
@@ -262,13 +264,18 @@ function movePlayer(dx, dy) {
             moveMonsters();
         } else {
             // 如果当前位置不是空方块，不能移动
-            alert("当前位置有障碍物，无法移动！");
+            return;
         }
     }
 }
 
 // 挖掘方块
 function mineBlock() {
+    // 如果计时器还没有启动，则启动计时器
+    if (!gameState.timer) {
+        startTimer();
+    }
+    
     const x = gameState.playerPosition.x;
     const y = gameState.playerPosition.y;
     
@@ -288,7 +295,6 @@ function mineBlock() {
             if (cell) {
                 cell.classList.add('partially-mined');
             }
-            alert("钻石矿需要再挖掘一次才能完全破碎！");
             return; // 返回，不执行后续操作
         } else if (gameState.blockStates[positionKey].hitsLeft === 1) {
             // 第二次挖掘，钻石矿被完全挖掉
@@ -296,7 +302,8 @@ function mineBlock() {
             // 有一定几率获得钻石剑
             if (Math.random() < 0.1 && gameState.inventory.diamondSword < 3) { // 最多3把钻石剑
                 gameState.inventory.diamondSword++;
-                alert("恭喜！你发现了一把钻石剑！");
+                // 播放获得物品音效
+                playItemPickupSound();
             }
             // 删除方块状态
             delete gameState.blockStates[positionKey];
@@ -314,10 +321,15 @@ function mineBlock() {
             // 挖掘TNT会减少生命值
             gameState.health -= 4;
             updateHealthDisplay();
-            alert(`哎呀！挖掘TNT时发生了爆炸！生命值减少4点。剩余生命值: ${gameState.health}`);
+            // 播放受伤声音
+            playHurtSound();
             if (gameState.health <= 0) {
-                alert("你被TNT炸死了！游戏结束！");
-                resetGame();
+                // 播放死亡音效
+                playDeathSound();
+                setTimeout(() => {
+                    alert("你被TNT炸死了！游戏结束！");
+                    resetGame();
+                }, 500);
                 return;
             }
             break;
@@ -326,10 +338,15 @@ function mineBlock() {
             // 挖掘反物质TNT会减少生命值
             gameState.health -= 20;
             updateHealthDisplay();
-            alert(`哎呀！挖掘反物质TNT时发生了剧烈爆炸！生命值减少20点。剩余生命值: ${gameState.health}`);
+            // 播放受伤声音
+            playHurtSound();
             if (gameState.health <= 0) {
-                alert("你被反物质TNT炸死了！游戏结束！");
-                resetGame();
+                // 播放死亡音效
+                playDeathSound();
+                setTimeout(() => {
+                    alert("你被反物质TNT炸死了！游戏结束！");
+                    resetGame();
+                }, 500);
                 return;
             }
             break;
@@ -347,14 +364,16 @@ function mineBlock() {
                 // 挖到金苹果增加生命值
                 gameState.health += 5;
                 updateHealthDisplay();
-                alert(`哇！你挖到了金苹果！生命值增加5点。当前生命值: ${gameState.health}`);
+                // 播放获得物品音效
+                playItemPickupSound();
                 break;
             case BLOCK_TYPES.MONSTER:
             case BLOCK_TYPES.ZOMBIE:
             case BLOCK_TYPES.CREEPER:
                 if (gameState.hasDiamondSword) {
                     // 有钻石剑可以杀死怪物
-                    alert("你用钻石剑杀死了怪物！");
+                    // 播放怪物死亡音效
+                    playMonsterDeathSound();
                     // 检查是否所有怪物都被消灭
                     if (checkAllMonstersEliminated()) {
                         showVictory();
@@ -372,10 +391,15 @@ function mineBlock() {
                             playerCell.style.animation = '';
                         }, 500);
                     }
-                    alert(`你被怪物攻击了！生命值减少3点。剩余生命值: ${gameState.health}`);
+                    // 播放受伤声音
+                    playHurtSound();
                     if (gameState.health <= 0) {
-                        alert("你被怪物攻击多次，生命值耗尽！游戏结束！");
-                        resetGame();
+                        // 播放死亡音效
+                        playDeathSound();
+                        setTimeout(() => {
+                            alert("你被怪物攻击多次，生命值耗尽！游戏结束！");
+                            resetGame();
+                        }, 500);
                         return;
                     }
                 }
@@ -383,10 +407,15 @@ function mineBlock() {
             case BLOCK_TYPES.LAVA:
                 gameState.health -= 2; // 岩浆伤害更高
                 updateHealthDisplay();
-                alert(`哎呀！你掉进了岩浆里！生命值减少。剩余生命值: ${gameState.health}`);
+                // 播放受伤声音
+                playHurtSound();
                 if (gameState.health <= 0) {
-                    alert("你被岩浆烧死了！游戏结束！");
-                    resetGame();
+                    // 播放死亡音效
+                    playDeathSound();
+                    setTimeout(() => {
+                        alert("你被岩浆烧死了！游戏结束！");
+                        resetGame();
+                    }, 500);
                     return;
                 }
                 break;
@@ -463,7 +492,8 @@ function placeBlock(event) {
                 gameState.board[y][x] = BLOCK_TYPES.ANTIMATTER_TNT;
                 gameState.inventory.antimatterTnt--;
             } else {
-                alert('你没有可放置的方块！');
+                // 播放错误音效
+                playErrorSound();
                 return;
             }
             
@@ -519,10 +549,15 @@ function moveMonsters() {
                             playerCell.style.animation = '';
                         }, 500);
                     }
-                    alert(`你被怪物攻击了！生命值减少3点。剩余生命值: ${gameState.health}`);
+                    // 播放受伤声音
+                    playHurtSound();
                     if (gameState.health <= 0) {
-                        alert("你被怪物攻击多次，生命值耗尽！游戏结束！");
-                        resetGame();
+                        // 播放死亡音效
+                        playDeathSound();
+                        setTimeout(() => {
+                            alert("你被怪物攻击多次，生命值耗尽！游戏结束！");
+                            resetGame();
+                        }, 500);
                         return;
                     }
                 } 
@@ -616,7 +651,8 @@ function explodeTNT(x, y) {
             gameState.inventory.tnt--;
         }
         
-        alert("TNT爆炸了！周围的方块被炸掉了！");
+        // 播放TNT爆炸音效
+        playExplosionSound();
         
         // 重新渲染游戏板
         renderBoard();
@@ -671,10 +707,15 @@ function explodeAntiMatterTNT(x, y) {
                         // 玩家位置，造成20点伤害
                         gameState.health -= 20;
                         updateHealthDisplay();
-                        alert(`反物质TNT爆炸！你受到了20点伤害。剩余生命值: ${gameState.health}`);
+                        // 播放受伤声音
+                        playHurtSound();
                         if (gameState.health <= 0) {
-                            alert("你被反物质TNT炸死了！游戏结束！");
-                            resetGame();
+                            // 播放死亡音效
+                            playDeathSound();
+                            setTimeout(() => {
+                                alert("你被反物质TNT炸死了！游戏结束！");
+                                resetGame();
+                            }, 500);
                             return;
                         }
                     }
@@ -700,7 +741,8 @@ function explodeAntiMatterTNT(x, y) {
             gameState.inventory.antimatterTnt--;
         }
         
-        alert("反物质TNT爆炸了！周围的方块被炸掉了！");
+        // 播放更大爆炸音效
+        playLargerExplosionSound();
         
         // 重新渲染游戏板
         renderBoard();
@@ -761,6 +803,14 @@ function playVictorySound() {
 
 // 显示胜利信息
 function showVictory() {
+    // 检查是否已经获胜，防止重复调用
+    if (gameState.hasWon) {
+        return;
+    }
+    
+    // 设置获胜标志
+    gameState.hasWon = true;
+    
     // 播放胜利声音
     playVictorySound();
     
@@ -818,8 +868,12 @@ function startTimer() {
 
 // 时间到，游戏失败
 function gameOverTimeout() {
-    alert("时间到！你没有在规定时间内消灭所有怪物，游戏失败！");
-    resetGame();
+    // 播放死亡音效
+    playDeathSound();
+    setTimeout(() => {
+        alert("时间到！你没有在规定时间内消灭所有怪物，游戏失败！");
+        resetGame();
+    }, 500);
 }
 
 // 开始游戏
@@ -827,8 +881,7 @@ function startGame() {
     // 重置游戏状态
     resetGame();
     
-    // 开始计时器
-    startTimer();
+    // 注意：计时器将在第一次挖掘方块时启动
     
     // 显示控制按钮，隐藏开始按钮
     document.getElementById('startBtn').style.display = 'none';
@@ -862,6 +915,7 @@ function resetGame() {
     gameState.health = 10; // 重置生命值为10点
     gameState.blockStates = {}; // 重置方块状态
     gameState.timeLeft = 180; // 重置剩余时间为3分钟
+    gameState.hasWon = false; // 重置获胜标志
     createBoard();
     // 确保玩家初始位置是空方块，以便能够移动
     gameState.board[7][7] = BLOCK_TYPES.EMPTY;
@@ -950,5 +1004,144 @@ function exitGame() {
         document.getElementById('moveDownBtn').style.display = 'none';
         document.getElementById('exitBtn').style.display = 'none';
         window.close();
+    }
+}
+
+// 播放获得物品声音
+function playItemPickupSound() {
+    try {
+        if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+            const audioCtx = new (AudioContext || webkitAudioContext)();
+            const duration = 0.5;
+            const sampleRate = audioCtx.sampleRate;
+            const numFrames = duration * sampleRate;
+            const buffer = audioCtx.createBuffer(1, numFrames, sampleRate);
+            const data = buffer.getChannelData(0);
+
+            // 生成上升音调
+            for (let i = 0; i < numFrames; i++) {
+                const t = i / sampleRate;
+                const frequency = 200 + t * 200; // 频率上升
+                data[i] = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t * 2);
+            }
+
+            const source = audioCtx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioCtx.destination);
+            source.start();
+        }
+    } catch (e) {
+        console.log("无法播放获得物品声音: ", e);
+    }
+}
+
+// 播放怪物死亡声音
+function playMonsterDeathSound() {
+    try {
+        if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+            const audioCtx = new (AudioContext || webkitAudioContext)();
+            const duration = 0.6;
+            const sampleRate = audioCtx.sampleRate;
+            const numFrames = duration * sampleRate;
+            const buffer = audioCtx.createBuffer(1, numFrames, sampleRate);
+            const data = buffer.getChannelData(0);
+
+            // 生成下降音调
+            for (let i = 0; i < numFrames; i++) {
+                const t = i / sampleRate;
+                const frequency = 300 - t * 150; // 频率下降
+                data[i] = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t * 4);
+            }
+
+            const source = audioCtx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioCtx.destination);
+            source.start();
+        }
+    } catch (e) {
+        console.log("无法播放怪物死亡声音: ", e);
+    }
+}
+
+// 播放错误声音
+function playErrorSound() {
+    try {
+        if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+            const audioCtx = new (AudioContext || webkitAudioContext)();
+            const duration = 0.3;
+            const sampleRate = audioCtx.sampleRate;
+            const numFrames = duration * sampleRate;
+            const buffer = audioCtx.createBuffer(1, numFrames, sampleRate);
+            const data = buffer.getChannelData(0);
+
+            // 生成下降音调
+            for (let i = 0; i < numFrames; i++) {
+                const t = i / sampleRate;
+                const frequency = 200 - t * 100; // 频率下降
+                data[i] = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t * 5);
+            }
+
+            const source = audioCtx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioCtx.destination);
+            source.start();
+        }
+    } catch (e) {
+        console.log("无法播放错误声音: ", e);
+    }
+}
+
+// 播放受伤声音
+function playHurtSound() {
+    try {
+        if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+            const audioCtx = new (AudioContext || webkitAudioContext)();
+            const duration = 0.3;
+            const sampleRate = audioCtx.sampleRate;
+            const numFrames = duration * sampleRate;
+            const buffer = audioCtx.createBuffer(1, numFrames, sampleRate);
+            const data = buffer.getChannelData(0);
+
+            // 生成低频噪音
+            for (let i = 0; i < numFrames; i++) {
+                const t = i / sampleRate;
+                data[i] = (Math.random() * 2 - 1) * Math.exp(-t * 10);
+            }
+
+            const source = audioCtx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioCtx.destination);
+            source.start();
+        }
+    } catch (e) {
+        console.log("无法播放受伤声音: ", e);
+    }
+}
+
+// 播放死亡声音
+function playDeathSound() {
+    try {
+        if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+            const audioCtx = new (AudioContext || webkitAudioContext)();
+            const duration = 1.0;
+            const sampleRate = audioCtx.sampleRate;
+            const numFrames = duration * sampleRate;
+            const buffer = audioCtx.createBuffer(1, numFrames, sampleRate);
+            const data = buffer.getChannelData(0);
+
+            // 生成低频音调
+            for (let i = 0; i < numFrames; i++) {
+                const t = i / sampleRate;
+                const frequency = 150 - t * 100; // 频率递减
+                data[i] = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t * 3);
+            }
+
+            const source = audioCtx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioCtx.destination);
+            source.start();
+        }
+    } catch (e) {
+        console.log("无法播放死亡声音: ", e);
     }
 }
