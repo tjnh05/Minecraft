@@ -1,0 +1,278 @@
+body {
+    font-family: 'Courier New', monospace;
+    background-color: #333;
+    margin: 0;
+    padding: 20px;
+    color: #fff;
+}
+
+.game-container {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+h1 {
+    color: #4CAF50;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.instructions {
+    margin: 10px 0;
+    font-size: 16px;
+    color: #ccc;
+}
+
+.controls {
+    margin: 15px 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+button {
+    background-color: #555;
+    color: white;
+    border: 1px solid #777;
+    padding: 10px 15px;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #666;
+}
+
+button:active {
+    background-color: #444;
+}
+
+.game-info {
+    margin: 15px 0;
+    font-size: 14px;
+    color: #ff9999;
+}
+
+.stats {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin: 15px 0;
+    font-size: 16px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    background-color: #444;
+    padding: 5px 10px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    margin: 3px;
+}
+
+.stat-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 3px;
+    box-shadow: inset 2px 2px 4px rgba(255,255,255,0.2), 
+                inset -2px -2px 4px rgba(0,0,0,0.2),
+                1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.game-board {
+    display: grid;
+    grid-template-columns: repeat(15, 40px);
+    grid-template-rows: repeat(15, 40px);
+    gap: 1px;
+    margin: 0 auto;
+    border: 2px solid #555;
+    background-color: #555;
+    width: fit-content;
+}
+
+.cell {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.cell:hover {
+    background-color: #666;
+}
+
+/* 方块类型样式 */
+.stone {
+    background-color: #808080;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%23808080'/%3E%3Ccircle cx='10' cy='10' r='3' fill='%23606060'/%3E%3Ccircle cx='25' cy='15' r='4' fill='%23606060'/%3E%3Ccircle cx='30' cy='30' r='3' fill='%23606060'/%3E%3C/svg%3E");
+}
+
+.iron-ore {
+    background-color: #c0c0c0;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%23c0c0c0'/%3E%3Ccircle cx='15' cy='15' r='8' fill='%23a0a0a0'/%3E%3Ccircle cx='20' cy='20' r='2' fill='%23808080'/%3E%3C/svg%3E");
+}
+
+.diamond-ore {
+    background-color: #b0e0e6;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%23b0e0e6'/%3E%3Cpolygon points='20,10 30,20 20,30 10,20' fill='%2387ceeb'/%3E%3C/svg%3E");
+}
+
+/* 部分挖掘的钻石矿 */
+.diamond-ore.partially-mined {
+    background-color: #87ceeb;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%2387ceeb'/%3E%3Cpolygon points='20,10 30,20 20,30 10,20' fill='%235a9fc2'/%3E%3Crect x='0' y='0' width='40' height='20' fill='%23808080' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+.lava {
+    background-color: #ff4500;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%23ff4500'/%3E%3Ccircle cx='10' cy='10' r='4' fill='%23ff8c00'/%3E%3Ccircle cx='25' cy='15' r='5' fill='%23ff8c00'/%3E%3Ccircle cx='30' cy='30' r='4' fill='%23ff8c00'/%3E%3C/svg%3E");
+}
+
+.wood {
+    background-color: #8B4513;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%238B4513'/%3E%3Crect x='5' y='5' width='30' height='3' fill='%235D2906'/%3E%3Crect x='5' y='15' width='30' height='3' fill='%235D2906'/%3E%3Crect x='5' y='25' width='30' height='3' fill='%235D2906'/%3E%3C/svg%3E");
+}
+
+.tnt {
+    background-color: #FF4500;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%23FF4500'/%3E%3Crect x='10' y='10' width='20' height='20' fill='%23000'/%3E%3Ctext x='20' y='25' font-family='Arial' font-size='14' fill='%23FFF' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E");
+    box-shadow: inset 3px 3px 6px rgba(255,255,255,0.2),
+                inset -3px -3px 6px rgba(0,0,0,0.3),
+                0 3px 6px rgba(0,0,0,0.3);
+}
+
+.antimatter-tnt {
+    background-color: #9932CC;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%239932CC'/%3E%3Crect x='10' y='10' width='20' height='20' fill='%23000'/%3E%3Ctext x='20' y='25' font-family='Arial' font-size='14' fill='%23FFF' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E");
+    box-shadow: inset 3px 3px 6px rgba(255,255,255,0.2),
+                inset -3px -3px 6px rgba(0,0,0,0.3),
+                0 3px 6px rgba(0,0,0,0.3);
+    animation: antimatterGlow 1s infinite alternate;
+}
+
+@keyframes antimatterGlow {
+    from {
+        box-shadow: inset 3px 3px 6px rgba(255,255,255,0.2),
+                    inset -3px -3px 6px rgba(0,0,0,0.3),
+                    0 0 5px rgba(153, 50, 204, 0.5);
+    }
+    to {
+        box-shadow: inset 3px 3px 6px rgba(255,255,255,0.2),
+                    inset -3px -3px 6px rgba(0,0,0,0.3),
+                    0 0 15px rgba(153, 50, 204, 0.8);
+    }
+}
+
+.water {
+    background-color: #1E90FF;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%231E90FF'/%3E%3Ccircle cx='8' cy='8' r='3' fill='%2387CEEB'/%3E%3Ccircle cx='20' cy='15' r='4' fill='%2387CEEB'/%3E%3Ccircle cx='30' cy='25' r='3' fill='%2387CEEB'/%3E%3C/svg%3E");
+}
+
+.cobblestone {
+    background-color: #696969;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%23696969'/%3E%3Cpolygon points='0,0 10,0 0,10' fill='%23555'/%3E%3Cpolygon points='10,0 20,0 20,10 0,10' fill='%23777'/%3E%3Cpolygon points='20,0 30,0 30,10 10,10' fill='%23555'/%3E%3Cpolygon points='30,0 40,0 40,10 20,10' fill='%23777'/%3E%3Cpolygon points='0,10 10,10 0,20' fill='%23777'/%3E%3Cpolygon points='10,10 20,10 20,20 0,20' fill='%23555'/%3E%3Cpolygon points='20,10 30,10 30,20 10,20' fill='%23777'/%3E%3Cpolygon points='30,10 40,10 40,20 20,20' fill='%23555'/%3E%3C/svg%3E");
+}
+
+.monster {
+    background-color: #32CD32;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%2332CD32'/%3E%3Ccircle cx='15' cy='15' r='5' fill='%23000'/%3E%3Ccircle cx='25' cy='15' r='5' fill='%23000'/%3E%3Cpath d='M15 25 Q20 30 25 25' stroke='%23000' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    border: 3px solid #000000;
+    animation: monsterGlow 1.5s infinite alternate;
+}
+
+.zombie {
+    background-color: #9ACD32;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%239ACD32'/%3E%3Ccircle cx='20' cy='15' r='8' fill='%23228B22'/%3E%3Crect x='15' y='25' width='10' height='10' fill='%23228B22'/%3E%3C/svg%3E");
+    border: 3px solid #000000;
+    animation: monsterGlow 1.5s infinite alternate;
+}
+
+.creeper {
+    background-color: #006400;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%23006400'/%3E%3Ccircle cx='15' cy='15' r='4' fill='%23000'/%3E%3Ccircle cx='25' cy='15' r='4' fill='%23000'/%3E%3Crect x='15' y='22' width='10' height='3' fill='%23000'/%3E%3C/svg%3E");
+    border: 3px solid #000000;
+    animation: monsterGlow 1.5s infinite alternate;
+}
+
+/* 怪物红色闪光动画 */
+@keyframes monsterGlow {
+    from {
+        box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+    }
+    to {
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+    }
+}
+
+.glass {
+    background-color: #87CEEB;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%2387CEEB'/%3E%3Cline x1='0' y1='0' x2='40' y2='40' stroke='%23FFF' stroke-width='1'/%3E%3Cline x1='40' y1='0' x2='0' y2='40' stroke='%23FFF' stroke-width='1'/%3E%3C/svg%3E");
+}
+
+.dirt {
+    background-color: #8B4513;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%238B4513'/%3E%3Ccircle cx='10' cy='10' r='3' fill='%235D2906'/%3E%3Ccircle cx='25' cy='15' r='4' fill='%235D2906'/%3E%3Ccircle cx='30' cy='30' r='3' fill='%235D2906'/%3E%3C/svg%3E");
+}
+
+.wool {
+    background-color: #FF69B4;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%23FF69B4'/%3E%3Ccircle cx='10' cy='10' r='2' fill='%23FF1493'/%3E%3Ccircle cx='20' cy='15' r='3' fill='%23FF1493'/%3E%3Ccircle cx='30' cy='10' r='2' fill='%23FF1493'/%3E%3Ccircle cx='15' cy='25' r='3' fill='%23FF1493'/%3E%3Ccircle cx='25' cy='30' r='2' fill='%23FF1493'/%3E%3C/svg%3E");
+}
+
+.golden-apple {
+    background-color: #FFD700;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%23FFD700'/%3E%3Ccircle cx='20' cy='20' r='10' fill='%23DAA520'/%3E%3Cpath d='M18 10 Q20 6 22 10' stroke='%238B4513' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+}
+
+.player {
+    background-color: #00ff00;
+    border: 4px solid #008000;
+    z-index: 10;
+    box-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
+}
+
+.mined {
+    background-color: #222;
+    border: 1px solid #444;
+}
+
+/* 怪物攻击玩家时的动画效果 */
+@keyframes attackFlash {
+    0% { background-color: #00ff00; box-shadow: 0 0 5px rgba(0, 255, 0, 0.8); }
+    25% { background-color: #ff4444; box-shadow: 0 0 20px rgba(255, 68, 68, 1); }
+    50% { background-color: #00ff00; box-shadow: 0 0 5px rgba(0, 255, 0, 0.8); }
+    75% { background-color: #ff4444; box-shadow: 0 0 20px rgba(255, 68, 68, 1); }
+    100% { background-color: #00ff00; box-shadow: 0 0 8px rgba(0, 255, 0, 0.8); }
+}
+
+/* TNT爆炸动画效果 */
+@keyframes tntExplosion {
+    0% { background-color: #FF4500; box-shadow: 0 0 10px rgba(255, 69, 0, 0.8); transform: scale(1); }
+    25% { background-color: #FF8C00; box-shadow: 0 0 20px rgba(255, 140, 0, 1); transform: scale(1.1); }
+    50% { background-color: #FF4500; box-shadow: 0 0 15px rgba(255, 69, 0, 0.9); transform: scale(1.05); }
+    75% { background-color: #FF8C00; box-shadow: 0 0 25px rgba(255, 140, 0, 1); transform: scale(1.15); }
+    100% { background-color: initial; box-shadow: initial; transform: scale(1); }
+}
+
+/* 反物质TNT爆炸动画效果 */
+@keyframes antimatterExplosion {
+    0% { background-color: #9932CC; box-shadow: 0 0 10px rgba(153, 50, 204, 0.8); transform: scale(1); }
+    25% { background-color: #DA70D6; box-shadow: 0 0 30px rgba(218, 112, 214, 1); transform: scale(1.2); }
+    50% { background-color: #9932CC; box-shadow: 0 0 20px rgba(153, 50, 204, 0.9); transform: scale(1.1); }
+    75% { background-color: #DA70D6; box-shadow: 0 0 40px rgba(218, 112, 214, 1); transform: scale(1.3); }
+    100% { background-color: initial; box-shadow: initial; transform: scale(1); }
+}

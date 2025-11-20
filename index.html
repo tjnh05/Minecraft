@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft矿洞探险</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>Minecraft矿洞探险</h1>
+        <div class="instructions">
+            <p>使用方向键或WASD移动，空格键挖掘方块</p>
+        </div>
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-icon" style="background-color: #c0c0c0;"></div>
+                <span>铁矿石: <span id="ironCount">0</span></span>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon" style="background-color: #b0e0e6;"></div>
+                <span>钻石: <span id="diamondCount">0</span></span>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon" style="background-color: #FF4500; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">T</div>
+                <span>TNT: <span id="tntCount">0</span></span>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon" style="background-color: #9932CC; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">A</div>
+                <span>反物质TNT: <span id="antimatterTntCount">0</span></span>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon" style="background-color: #87ceeb;"></div>
+                <span>钻石剑: <span id="diamondSwordCount">0</span></span>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon" style="background-color: #FF69B4;"></div>
+                <span>羊毛: <span id="woolCount">0</span></span>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon" style="background-color: #FFD700;"></div>
+                <span>金苹果: <span id="goldenAppleCount">0</span></span>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon" style="background-color: #ff0000;"></div>
+                <span>生命值: <span id="healthCount">10</span></span>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon" style="background-color: #0066cc; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">⏱</div>
+                <span>剩余时间: <span id="timerCount">3:00</span></span>
+            </div>
+        </div>
+        <div id="gameBoard" class="game-board"></div>
+        <div class="controls">
+            <button id="startBtn">开始游戏</button>
+            <button id="mineBtn" style="display:none;">挖掘 (空格键)</button>
+            <button id="moveUpBtn" style="display:none;">上 (↑/W)</button>
+            <button id="moveLeftBtn" style="display:none;">左 (←/A)</button>
+            <button id="moveRightBtn" style="display:none;">右 (→/D)</button>
+            <button id="moveDownBtn" style="display:none;">下 (↓/S)</button>
+            <button id="exitBtn" style="display:none;">退出游戏</button>
+        </div>
+        <div class="game-info">
+            <p>绿色方块是玩家位置。挖掘岩浆会结束游戏！</p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
