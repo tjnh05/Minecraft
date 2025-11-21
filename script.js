@@ -2,7 +2,6 @@
 const BOARD_SIZE = 15;
 const BLOCK_TYPES = {
     STONE: 'stone',
-    IRON_ORE: 'iron-ore',
     DIAMOND_ORE: 'diamond-ore',
     LAVA: 'lava',
     EMPTY: 'mined',
@@ -16,7 +15,6 @@ const BLOCK_TYPES = {
     CREEPER: 'creeper',
     GLASS: 'glass',
     DIRT: 'dirt',
-    WOOL: 'wool',
     GOLDEN_APPLE: 'golden-apple'
 };
 
@@ -32,12 +30,10 @@ let gameState = {
     board: [],
     playerPosition: { x: 7, y: 7 },
     inventory: {
-        iron: 0,
         diamond: 0,
         tnt: 0,
         antimatterTnt: 0,
         diamondSword: 1, // 初始就有一把钻石剑
-        wool: 0,
         goldenApple: 0
     },
     hasDiamondSword: true, // 初始就拥有钻石剑
@@ -96,55 +92,47 @@ function createBoard() {
             
             if (y < 3) {
                 // 顶层多为石头、木头、泥土、玻璃
+                if (rand < 0.35) {
+                    row.push(BLOCK_TYPES.STONE);
+                } else if (rand < 0.55) {
+                    row.push(BLOCK_TYPES.WOOD);
+                } else if (rand < 0.7) {
+                    row.push(BLOCK_TYPES.DIRT);
+                } else if (rand < 0.85) {
+                    row.push(BLOCK_TYPES.GLASS);
+                } else {
+                    row.push(BLOCK_TYPES.GOLDEN_APPLE);
+                }
+            } else if (y < 8) {
+                // 中层石头、木头、鹅卵石、泥土
                 if (rand < 0.3) {
                     row.push(BLOCK_TYPES.STONE);
                 } else if (rand < 0.5) {
                     row.push(BLOCK_TYPES.WOOD);
                 } else if (rand < 0.65) {
-                    row.push(BLOCK_TYPES.DIRT);
-                } else if (rand < 0.8) {
-                    row.push(BLOCK_TYPES.GLASS);
-                } else if (rand < 0.9) {
-                    row.push(BLOCK_TYPES.IRON_ORE);
-                } else {
-                    row.push(BLOCK_TYPES.GOLDEN_APPLE);
-                }
-            } else if (y < 8) {
-                // 中层石头、铁矿石、木头、鹅卵石、泥土、羊毛
-                if (rand < 0.2) {
-                    row.push(BLOCK_TYPES.STONE);
-                } else if (rand < 0.35) {
-                    row.push(BLOCK_TYPES.WOOD);
-                } else if (rand < 0.5) {
                     row.push(BLOCK_TYPES.COBBLESTONE);
-                } else if (rand < 0.65) {
+                } else if (rand < 0.8) {
                     row.push(BLOCK_TYPES.DIRT);
-                } else if (rand < 0.75) {
-                    row.push(BLOCK_TYPES.WOOL);
                 } else if (rand < 0.85) {
-                    row.push(BLOCK_TYPES.IRON_ORE);
-                } else if (rand < 0.9) {
                     row.push(BLOCK_TYPES.DIAMOND_ORE);
                 } else {
                     row.push(BLOCK_TYPES.GOLDEN_APPLE);
                 }
             } else if (y < 12) {
-                // 深层铁矿石、钻石、TNT、水、玻璃、金苹果
-                if (rand < 0.15) {
+                // 深层钻石、TNT、水、玻璃、金苹果
+                if (rand < 0.2) {
                     row.push(BLOCK_TYPES.STONE);
                 } else if (rand < 0.3) {
-                    row.push(BLOCK_TYPES.IRON_ORE);
-                } else if (rand < 0.4) {
                     row.push(BLOCK_TYPES.DIAMOND_ORE);
-                } else if (rand < 0.5) {
+                } else if (rand < 0.4) {
                     row.push(BLOCK_TYPES.TNT);
-                } else if (rand < 0.55) {
+                } else if (rand < 0.45) {
                     row.push(BLOCK_TYPES.ANTIMATTER_TNT);
-                } else if (rand < 0.65) {
+                } else if (rand < 0.55) {
                     row.push(BLOCK_TYPES.WATER);
-                } else if (rand < 0.75) {
+                } else if (rand < 0.65) {
                     row.push(BLOCK_TYPES.GLASS);
-                } else if (rand < 0.85) {
+                } else if (rand < 0.75) {
                     // 随机生成怪物
                     const mobRand = Math.random();
                     if (mobRand < 0.4) {
@@ -161,21 +149,19 @@ function createBoard() {
                 }
             } else {
                 // 最深层加入岩浆、TNT和更多怪物
-                if (rand < 0.1) {
+                if (rand < 0.15) {
                     row.push(BLOCK_TYPES.STONE);
                 } else if (rand < 0.25) {
-                    row.push(BLOCK_TYPES.IRON_ORE);
-                } else if (rand < 0.4) {
                     row.push(BLOCK_TYPES.DIAMOND_ORE);
-                } else if (rand < 0.55) {
+                } else if (rand < 0.4) {
                     row.push(BLOCK_TYPES.LAVA);
-                } else if (rand < 0.65) {
+                } else if (rand < 0.5) {
                     row.push(BLOCK_TYPES.TNT);
-                } else if (rand < 0.7) {
+                } else if (rand < 0.55) {
                     row.push(BLOCK_TYPES.ANTIMATTER_TNT);
-                } else if (rand < 0.8) {
+                } else if (rand < 0.65) {
                     row.push(BLOCK_TYPES.GLASS);
-                } else if (rand < 0.9) {
+                } else if (rand < 0.75) {
                     // 随机生成怪物
                     const mobRand = Math.random();
                     if (mobRand < 0.4) {
@@ -218,13 +204,11 @@ function renderBoard() {
 
 // 更新统计信息
 function updateStats() {
-    document.getElementById('ironCount').textContent = gameState.inventory.iron;
     document.getElementById('diamondCount').textContent = gameState.inventory.diamond;
     
     // 添加新的资源统计
     document.getElementById('tntCount').textContent = gameState.inventory.tnt;
     document.getElementById('diamondSwordCount').textContent = gameState.inventory.diamondSword;
-    document.getElementById('woolCount').textContent = gameState.inventory.wool || 0;
     document.getElementById('goldenAppleCount').textContent = gameState.inventory.goldenApple || 0;
     
     // 更新反物质TNT显示
@@ -317,9 +301,6 @@ function mineBlock() {
     else {
         // 根据方块类型增加物品
         switch (blockType) {
-            case BLOCK_TYPES.IRON_ORE:
-                gameState.inventory.iron++;
-                break;
             case BLOCK_TYPES.TNT:
             gameState.inventory.tnt++;
             // 挖掘TNT会减少生命值
@@ -359,9 +340,6 @@ function mineBlock() {
                 return;
             case BLOCK_TYPES.GLASS:
                 // 玻璃不再分解为石头
-                break;
-            case BLOCK_TYPES.WOOL:
-                gameState.inventory.wool++;
                 break;
             case BLOCK_TYPES.GOLDEN_APPLE:
                 gameState.inventory.goldenApple++;
@@ -851,12 +829,10 @@ function resetGame() {
     
     gameState.playerPosition = { x: 7, y: 7 };
     gameState.inventory = { 
-        iron: 0, 
         diamond: 0,
         tnt: 0,
         antimatterTnt: 0,
         diamondSword: 1, // 重新开始时初始拥有钻石剑
-        wool: 0,
         goldenApple: 0
     };
     gameState.hasDiamondSword = true;
