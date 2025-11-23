@@ -1,5 +1,20 @@
 // 游戏配置
 const BOARD_SIZE = 15;
+const DIFFICULTY_LEVELS = {
+    EASY: { 
+        timeLimit: 180, // 3分钟
+        goldenAppleReduction: 1 // 不减少
+    },
+    MEDIUM: { 
+        timeLimit: 120, // 2分钟
+        goldenAppleReduction: 1 // 不减少
+    },
+    HARD: { 
+        timeLimit: 60, // 1分钟
+        goldenAppleReduction: 0.67 // 减少三分之一
+    }
+};
+
 const BLOCK_TYPES = {
     STONE: 'stone',
     DIAMOND_ORE: 'diamond-ore',
@@ -38,15 +53,21 @@ let gameState = {
     },
     hasDiamondSword: true, // 初始就拥有钻石剑
     health: 10, // 玩家初始生命值调整为10点
+    difficulty: 'medium', // 默认难度为中等
     // 用于跟踪方块状态
     blockStates: {}, // 存储需要多次点击的方块状态
     timer: null, // 计时器
-    timeLeft: 180, // 剩余时间（秒），3分钟=180秒
+    timeLeft: 180, // 剩余时间（秒），初始为中等难度的180秒
     hasWon: false // 标记游戏是否已获胜
 };
 
 // 初始化游戏
 function initGame() {
+    // 设置难度选择按钮事件监听器
+    document.getElementById('difficulty-easy').addEventListener('click', () => changeDifficulty('easy'));
+    document.getElementById('difficulty-medium').addEventListener('click', () => changeDifficulty('medium'));
+    document.getElementById('difficulty-hard').addEventListener('click', () => changeDifficulty('hard'));
+    
     createBoard();
     // 确保玩家初始位置是空方块，以便能够移动
     gameState.board[7][7] = BLOCK_TYPES.EMPTY;
@@ -78,6 +99,10 @@ function initGame() {
 function createBoard() {
     gameState.board = [];
     
+    // 根据难度获取金苹果减少比例
+    const difficultyConfig = DIFFICULTY_LEVELS[gameState.difficulty.toUpperCase()];
+    const goldenAppleReduction = difficultyConfig ? difficultyConfig.goldenAppleReduction : 1;
+    
     for (let y = 0; y < BOARD_SIZE; y++) {
         const row = [];
         for (let x = 0; x < BOARD_SIZE; x++) {
@@ -101,7 +126,12 @@ function createBoard() {
                 } else if (rand < 0.85) {
                     row.push(BLOCK_TYPES.GLASS);
                 } else {
-                    row.push(BLOCK_TYPES.GOLDEN_APPLE);
+                    // 根据难度调整金苹果出现概率
+                    if (Math.random() < goldenAppleReduction) {
+                        row.push(BLOCK_TYPES.GOLDEN_APPLE);
+                    } else {
+                        row.push(BLOCK_TYPES.STONE); // 用石头替代部分金苹果
+                    }
                 }
             } else if (y < 8) {
                 // 中层石头、木头、鹅卵石、泥土
@@ -116,7 +146,12 @@ function createBoard() {
                 } else if (rand < 0.85) {
                     row.push(BLOCK_TYPES.DIAMOND_ORE);
                 } else {
-                    row.push(BLOCK_TYPES.GOLDEN_APPLE);
+                    // 根据难度调整金苹果出现概率
+                    if (Math.random() < goldenAppleReduction) {
+                        row.push(BLOCK_TYPES.GOLDEN_APPLE);
+                    } else {
+                        row.push(BLOCK_TYPES.STONE); // 用石头替代部分金苹果
+                    }
                 }
             } else if (y < 12) {
                 // 深层钻石、TNT、水、玻璃、金苹果
@@ -145,7 +180,12 @@ function createBoard() {
                 } else if (rand < 0.95) {
                     row.push(BLOCK_TYPES.DIAMOND_ORE); // 额外的钻石
                 } else {
-                    row.push(BLOCK_TYPES.GOLDEN_APPLE);
+                    // 根据难度调整金苹果出现概率
+                    if (Math.random() < goldenAppleReduction) {
+                        row.push(BLOCK_TYPES.GOLDEN_APPLE);
+                    } else {
+                        row.push(BLOCK_TYPES.STONE); // 用石头替代部分金苹果
+                    }
                 }
             } else {
                 // 最深层加入岩浆、TNT和更多怪物
@@ -172,7 +212,12 @@ function createBoard() {
                         row.push(BLOCK_TYPES.CREEPER);
                     }
                 } else {
-                    row.push(BLOCK_TYPES.GOLDEN_APPLE);
+                    // 根据难度调整金苹果出现概率
+                    if (Math.random() < goldenAppleReduction) {
+                        row.push(BLOCK_TYPES.GOLDEN_APPLE);
+                    } else {
+                        row.push(BLOCK_TYPES.STONE); // 用石头替代部分金苹果
+                    }
                 }
             }
         }
@@ -785,8 +830,9 @@ function updateTimerDisplay() {
 
 // 开始计时器
 function startTimer() {
-    // 重置时间
-    gameState.timeLeft = 180; // 3分钟
+    // 根据难度设置时间
+    const difficultyConfig = DIFFICULTY_LEVELS[gameState.difficulty.toUpperCase()];
+    gameState.timeLeft = difficultyConfig.timeLimit;
     updateTimerDisplay();
     
     // 清除任何现有的计时器
@@ -838,7 +884,11 @@ function resetGame() {
     gameState.hasDiamondSword = true;
     gameState.health = 10; // 重置生命值为10点
     gameState.blockStates = {}; // 重置方块状态
-    gameState.timeLeft = 180; // 重置剩余时间为3分钟
+    
+    // 根据难度设置时间
+    const difficultyConfig = DIFFICULTY_LEVELS[gameState.difficulty.toUpperCase()];
+    gameState.timeLeft = difficultyConfig.timeLimit;
+    
     gameState.hasWon = false; // 重置获胜标志
     createBoard();
     // 确保玩家初始位置是空方块，以便能够移动
@@ -1075,4 +1125,20 @@ function playDeathSound() {
     } catch (e) {
         console.log("无法播放死亡声音: ", e);
     }
+}
+
+// 更改游戏难度
+function changeDifficulty(difficulty) {
+    // 更新游戏状态
+    gameState.difficulty = difficulty;
+    
+    // 更新按钮的激活状态
+    document.querySelectorAll('.difficulty-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    document.getElementById(`difficulty-${difficulty}`).classList.add('active');
+    
+    // 重置游戏以应用新难度
+    resetGame();
 }
