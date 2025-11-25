@@ -276,19 +276,6 @@ function renderBoard() {
 
 // 更新统计信息
 function updateStats() {
-    document.getElementById('diamondCount').textContent = gameState.inventory.diamond;
-    
-    // 添加新的资源统计
-    document.getElementById('tntCount').textContent = gameState.inventory.tnt;
-    document.getElementById('diamondSwordCount').textContent = gameState.inventory.diamondSword;
-    document.getElementById('goldenAppleCount').textContent = gameState.inventory.goldenApple || 0;
-    
-    // 更新反物质TNT显示
-    const antimatterTntElement = document.getElementById('antimatterTntCount');
-    if (antimatterTntElement) {
-        antimatterTntElement.textContent = gameState.inventory.antimatterTnt || 0;
-    }
-    
     // 更新生命值显示
     updateHealthDisplay();
 }
