@@ -124,6 +124,8 @@ function createBoard() {
     
     // 随机放置怪物，总数由难度决定
     let monstersPlaced = 0;
+    const placedMonsters = []; // 记录已放置怪物的位置，确保总数准确
+    
     while (monstersPlaced < totalMonsters) {
         const x = Math.floor(Math.random() * BOARD_SIZE);
         const y = Math.floor(Math.random() * BOARD_SIZE);
@@ -147,6 +149,7 @@ function createBoard() {
             }
             
             gameState.board[y][x] = monsterType;
+            placedMonsters.push({x, y, type: monsterType});
             monstersPlaced++;
         }
     }
