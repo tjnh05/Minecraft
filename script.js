@@ -14,7 +14,7 @@ const DIFFICULTY_LEVELS = {
     HARD: { 
         timeLimit: 60, // 1分钟
         goldenAppleReduction: 0.67, // 减少三分之一
-        totalMonsters: 13 // 困难模式下怪物总数为13个
+        totalMonsters: 10 // 困难模式下怪物总数为10个
     }
 };
 
