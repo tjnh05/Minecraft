@@ -3,15 +3,18 @@ const BOARD_SIZE = 15;
 const DIFFICULTY_LEVELS = {
     EASY: { 
         timeLimit: 180, // 3分钟
-        goldenAppleReduction: 1 // 不减少
+        goldenAppleReduction: 1, // 不减少
+        totalMonsters: 10 // 简单模式下怪物总数为10个
     },
     MEDIUM: { 
         timeLimit: 120, // 2分钟
-        goldenAppleReduction: 1 // 不减少
+        goldenAppleReduction: 1, // 不减少
+        totalMonsters: 10 // 中等模式下怪物总数为10个
     },
     HARD: { 
         timeLimit: 60, // 1分钟
-        goldenAppleReduction: 0.67 // 减少三分之一
+        goldenAppleReduction: 0.67, // 减少三分之一
+        totalMonsters: 13 // 困难模式下怪物总数为13个
     }
 };
 
@@ -99,16 +102,61 @@ function initGame() {
 function createBoard() {
     gameState.board = [];
     
-    // 根据难度获取金苹果减少比例
+    // 根据难度获取金苹果减少比例和怪物总数
     const difficultyConfig = DIFFICULTY_LEVELS[gameState.difficulty.toUpperCase()];
     const goldenAppleReduction = difficultyConfig ? difficultyConfig.goldenAppleReduction : 1;
+    const totalMonsters = difficultyConfig ? difficultyConfig.totalMonsters : 10;
     
+    // 初始化游戏板
     for (let y = 0; y < BOARD_SIZE; y++) {
         const row = [];
         for (let x = 0; x < BOARD_SIZE; x++) {
             // 在中心附近生成玩家安全区域
             if (Math.abs(x - 7) <= 2 && Math.abs(y - 7) <= 2) {
                 row.push(BLOCK_TYPES.STONE);
+            } else {
+                // 初始化为石头
+                row.push(BLOCK_TYPES.STONE);
+            }
+        }
+        gameState.board.push(row);
+    }
+    
+    // 随机放置怪物，总数由难度决定
+    let monstersPlaced = 0;
+    while (monstersPlaced < totalMonsters) {
+        const x = Math.floor(Math.random() * BOARD_SIZE);
+        const y = Math.floor(Math.random() * BOARD_SIZE);
+        
+        // 确保不在玩家安全区域内放置怪物
+        if (Math.abs(x - 7) <= 2 && Math.abs(y - 7) <= 2) {
+            continue;
+        }
+        
+        // 确保该位置不是空方块或已经放置了怪物
+        if (gameState.board[y][x] === BLOCK_TYPES.STONE) {
+            // 随机选择怪物类型
+            const mobRand = Math.random();
+            let monsterType;
+            if (mobRand < 0.33) {
+                monsterType = BLOCK_TYPES.MONSTER;
+            } else if (mobRand < 0.67) {
+                monsterType = BLOCK_TYPES.ZOMBIE;
+            } else {
+                monsterType = BLOCK_TYPES.CREEPER;
+            }
+            
+            gameState.board[y][x] = monsterType;
+            monstersPlaced++;
+        }
+    }
+    
+    // 填充其他方块
+    for (let y = 0; y < BOARD_SIZE; y++) {
+        for (let x = 0; x < BOARD_SIZE; x++) {
+            // 跳过玩家安全区域和已放置怪物的位置
+            if ((Math.abs(x - 7) <= 2 && Math.abs(y - 7) <= 2) || 
+                [BLOCK_TYPES.MONSTER, BLOCK_TYPES.ZOMBIE, BLOCK_TYPES.CREEPER].includes(gameState.board[y][x])) {
                 continue;
             }
             
@@ -118,110 +166,89 @@ function createBoard() {
             if (y < 3) {
                 // 顶层多为石头、木头、泥土、玻璃
                 if (rand < 0.35) {
-                    row.push(BLOCK_TYPES.STONE);
+                    gameState.board[y][x] = BLOCK_TYPES.STONE;
                 } else if (rand < 0.55) {
-                    row.push(BLOCK_TYPES.WOOD);
+                    gameState.board[y][x] = BLOCK_TYPES.WOOD;
                 } else if (rand < 0.7) {
-                    row.push(BLOCK_TYPES.DIRT);
+                    gameState.board[y][x] = BLOCK_TYPES.DIRT;
                 } else if (rand < 0.85) {
-                    row.push(BLOCK_TYPES.GLASS);
+                    gameState.board[y][x] = BLOCK_TYPES.GLASS;
                 } else {
                     // 根据难度调整金苹果出现概率
                     if (Math.random() < goldenAppleReduction) {
-                        row.push(BLOCK_TYPES.GOLDEN_APPLE);
+                        gameState.board[y][x] = BLOCK_TYPES.GOLDEN_APPLE;
                     } else {
-                        row.push(BLOCK_TYPES.STONE); // 用石头替代部分金苹果
+                        gameState.board[y][x] = BLOCK_TYPES.STONE; // 用石头替代部分金苹果
                     }
                 }
             } else if (y < 8) {
                 // 中层石头、木头、鹅卵石、泥土
                 if (rand < 0.3) {
-                    row.push(BLOCK_TYPES.STONE);
+                    gameState.board[y][x] = BLOCK_TYPES.STONE;
                 } else if (rand < 0.5) {
-                    row.push(BLOCK_TYPES.WOOD);
+                    gameState.board[y][x] = BLOCK_TYPES.WOOD;
                 } else if (rand < 0.65) {
-                    row.push(BLOCK_TYPES.COBBLESTONE);
+                    gameState.board[y][x] = BLOCK_TYPES.COBBLESTONE;
                 } else if (rand < 0.8) {
-                    row.push(BLOCK_TYPES.DIRT);
+                    gameState.board[y][x] = BLOCK_TYPES.DIRT;
                 } else if (rand < 0.85) {
-                    row.push(BLOCK_TYPES.DIAMOND_ORE);
+                    gameState.board[y][x] = BLOCK_TYPES.DIAMOND_ORE;
                 } else {
                     // 根据难度调整金苹果出现概率
                     if (Math.random() < goldenAppleReduction) {
-                        row.push(BLOCK_TYPES.GOLDEN_APPLE);
+                        gameState.board[y][x] = BLOCK_TYPES.GOLDEN_APPLE;
                     } else {
-                        row.push(BLOCK_TYPES.STONE); // 用石头替代部分金苹果
+                        gameState.board[y][x] = BLOCK_TYPES.STONE; // 用石头替代部分金苹果
                     }
                 }
             } else if (y < 12) {
                 // 深层钻石、TNT、水、玻璃、金苹果
                 if (rand < 0.2) {
-                    row.push(BLOCK_TYPES.STONE);
+                    gameState.board[y][x] = BLOCK_TYPES.STONE;
                 } else if (rand < 0.3) {
-                    row.push(BLOCK_TYPES.DIAMOND_ORE);
+                    gameState.board[y][x] = BLOCK_TYPES.DIAMOND_ORE;
                 } else if (rand < 0.4) {
-                    row.push(BLOCK_TYPES.TNT);
+                    gameState.board[y][x] = BLOCK_TYPES.TNT;
                 } else if (rand < 0.45) {
-                    row.push(BLOCK_TYPES.ANTIMATTER_TNT);
+                    gameState.board[y][x] = BLOCK_TYPES.ANTIMATTER_TNT;
                 } else if (rand < 0.55) {
-                    row.push(BLOCK_TYPES.WATER);
+                    gameState.board[y][x] = BLOCK_TYPES.WATER;
                 } else if (rand < 0.65) {
-                    row.push(BLOCK_TYPES.GLASS);
-                } else if (rand < 0.75) {
-                    // 随机生成怪物
-                    const mobRand = Math.random();
-                    if (mobRand < 0.4) {
-                        row.push(BLOCK_TYPES.MONSTER);
-                    } else if (mobRand < 0.7) {
-                        row.push(BLOCK_TYPES.ZOMBIE);
-                    } else {
-                        row.push(BLOCK_TYPES.CREEPER);
-                    }
+                    gameState.board[y][x] = BLOCK_TYPES.GLASS;
                 } else if (rand < 0.95) {
-                    row.push(BLOCK_TYPES.DIAMOND_ORE); // 额外的钻石
+                    gameState.board[y][x] = BLOCK_TYPES.DIAMOND_ORE; // 额外的钻石
                 } else {
                     // 根据难度调整金苹果出现概率
                     if (Math.random() < goldenAppleReduction) {
-                        row.push(BLOCK_TYPES.GOLDEN_APPLE);
+                        gameState.board[y][x] = BLOCK_TYPES.GOLDEN_APPLE;
                     } else {
-                        row.push(BLOCK_TYPES.STONE); // 用石头替代部分金苹果
+                        gameState.board[y][x] = BLOCK_TYPES.STONE; // 用石头替代部分金苹果
                     }
                 }
             } else {
-                // 最深层加入岩浆、TNT和更多怪物
+                // 最深层加入岩浆、TNT和其他方块
                 if (rand < 0.15) {
-                    row.push(BLOCK_TYPES.STONE);
+                    gameState.board[y][x] = BLOCK_TYPES.STONE;
                 } else if (rand < 0.25) {
-                    row.push(BLOCK_TYPES.DIAMOND_ORE);
+                    gameState.board[y][x] = BLOCK_TYPES.DIAMOND_ORE;
                 } else if (rand < 0.4) {
-                    row.push(BLOCK_TYPES.LAVA);
+                    gameState.board[y][x] = BLOCK_TYPES.LAVA;
                 } else if (rand < 0.5) {
-                    row.push(BLOCK_TYPES.TNT);
+                    gameState.board[y][x] = BLOCK_TYPES.TNT;
                 } else if (rand < 0.55) {
-                    row.push(BLOCK_TYPES.ANTIMATTER_TNT);
+                    gameState.board[y][x] = BLOCK_TYPES.ANTIMATTER_TNT;
                 } else if (rand < 0.65) {
-                    row.push(BLOCK_TYPES.GLASS);
-                } else if (rand < 0.75) {
-                    // 随机生成怪物
-                    const mobRand = Math.random();
-                    if (mobRand < 0.4) {
-                        row.push(BLOCK_TYPES.MONSTER);
-                    } else if (mobRand < 0.7) {
-                        row.push(BLOCK_TYPES.ZOMBIE);
-                    } else {
-                        row.push(BLOCK_TYPES.CREEPER);
-                    }
+                    gameState.board[y][x] = BLOCK_TYPES.GLASS;
                 } else {
                     // 根据难度调整金苹果出现概率
                     if (Math.random() < goldenAppleReduction) {
-                        row.push(BLOCK_TYPES.GOLDEN_APPLE);
+                        gameState.board[y][x] = BLOCK_TYPES.GOLDEN_APPLE;
                     } else {
-                        row.push(BLOCK_TYPES.STONE); // 用石头替代部分金苹果
+                        gameState.board[y][x] = BLOCK_TYPES.STONE; // 用石头替代部分金苹果
                     }
                 }
             }
         }
-        gameState.board.push(row);
     }
 }
 
