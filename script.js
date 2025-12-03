@@ -60,6 +60,7 @@ let gameState = {
     timer: null, // 计时器
     timeLeft: 180, // 剩余时间（秒），初始为中等难度的180秒
     hasWon: false, // 标记游戏是否已获胜
+    hasStarted: false, // 标记游戏是否已开始（第一次操作）
     // 触控相关状态
     touchStartTime: 0, // 触摸开始时间
     touchPosition: null, // 触摸位置
@@ -704,6 +705,11 @@ function movePlayer(dx, dy) {
             if (targetBlockType === BLOCK_TYPES.WATER) {
                 return;
             }
+            // 如果游戏还没有开始，标记为已开始并启动计时器
+            if (!gameState.hasStarted) {
+                gameState.hasStarted = true;
+                startTimer();
+            }
             // 可以移动到目标位置（除了水方块外的任何方块）
             gameState.playerPosition.x = newX;
             gameState.playerPosition.y = newY;
@@ -719,8 +725,9 @@ function movePlayer(dx, dy) {
 
 // 挖掘方块
 function mineBlock() {
-    // 如果计时器还没有启动，则启动计时器
-    if (!gameState.timer) {
+    // 如果游戏还没有开始，标记为已开始并启动计时器
+    if (!gameState.hasStarted) {
+        gameState.hasStarted = true;
         startTimer();
     }
     
@@ -1393,6 +1400,9 @@ function resetGame() {
         clearInterval(gameState.timer);
         gameState.timer = null;
     }
+    
+    // 重置游戏开始状态
+    gameState.hasStarted = false;
     
     gameState.playerPosition = { x: 7, y: 7 };
     gameState.inventory = { 
