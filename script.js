@@ -66,7 +66,10 @@ let gameState = {
     touchStartTime: 0, // 触摸开始时间
     touchPosition: null, // 触摸位置
     longPressTimer: null, // 长按计时器
-    isTouchDevice: false // 是否为触控设备
+    isTouchDevice: false, // 是否为触控设备
+    // 纪录相关状态
+    gameStartTime: 0, // 游戏开始时间戳
+    bestTime: null // 最短胜利时间（秒）
 };
 
 // 根据屏幕大小计算合适的游戏板尺寸
@@ -111,6 +114,7 @@ function initGame() {
     document.getElementById('difficulty-hard').addEventListener('click', () => changeDifficulty('hard'));
     
     console.log('初始化游戏...');
+    loadBestTime(); // 加载最佳纪录
     createBoard();
     
     // 确保玩家初始位置是空方块，以便能够移动
@@ -126,6 +130,7 @@ function initGame() {
     console.log('游戏板渲染完成');
     updateStats();
     updateTimerDisplay(); // 初始化计时器显示
+    updateBestTimeDisplay(); // 更新最佳纪录显示
     
     
     
@@ -1215,12 +1220,26 @@ function showVictory() {
     // 播放胜利声音
     playVictorySound();
     
+    // 计算并检查是否打破纪录
+    const gameTime = calculateGameTime();
+    let isNewRecord = false;
+    let message = "你消灭了所有怪物，获得了胜利！";
+    
+    if (gameState.bestTime === null || gameTime < gameState.bestTime) {
+        gameState.bestTime = gameTime;
+        saveBestTime();
+        isNewRecord = true;
+        const minutes = Math.floor(gameTime / 60);
+        const seconds = gameTime % 60;
+        message = `🎉 新纪录！用时 ${minutes}:${seconds < 10 ? '0' : ''}${seconds} 消灭所有怪物！`;
+    }
+    
     // 延迟显示提示框，让音乐先播放
     setTimeout(() => {
         // 再次检查获胜状态，以防在延迟期间被其他事件重复触发
         if (gameState.hasWon) {
             // 使用自定义弹窗替代alert
-            showCustomDialog("恭喜胜利！", "你消灭了所有怪物，获得了胜利！是否重新开始新游戏？", () => {
+            showCustomDialog("恭喜胜利！", message + "是否重新开始新游戏？", () => {
                 resetGame();
             });
         }
@@ -1253,6 +1272,9 @@ function updateTimerDisplay() {
 
 // 开始计时器
 function startTimer() {
+    // 记录游戏开始时间
+    gameState.gameStartTime = Date.now();
+    
     // 根据难度设置时间
     const difficultyConfig = DIFFICULTY_LEVELS[gameState.difficulty.toUpperCase()];
     gameState.timeLeft = difficultyConfig.timeLimit;
@@ -1313,12 +1335,14 @@ function resetGame() {
     gameState.timeLeft = difficultyConfig.timeLimit;
     
     gameState.hasWon = false; // 重置获胜标志
+    gameState.gameStartTime = 0; // 重置游戏开始时间
     createBoard();
     // 确保玩家初始位置是空方块，以便能够移动
     gameState.board[7][7] = BLOCK_TYPES.EMPTY;
     renderBoard();
     updateStats();
     updateTimerDisplay(); // 更新计时器显示
+    updateBestTimeDisplay(); // 更新最佳纪录显示
     
     // Show controls since the start button is removed
     document.getElementById('mineBtn').style.display = 'inline-block';
@@ -1564,4 +1588,45 @@ function changeDifficulty(difficulty) {
     
     // 重置游戏以应用新难度
     resetGame();
+}
+
+// 加载最佳纪录
+function loadBestTime() {
+    const saved = localStorage.getItem('minecraftBestTime');
+    if (saved) {
+        gameState.bestTime = parseInt(saved);
+    }
+}
+
+// 保存最佳纪录
+function saveBestTime() {
+    if (gameState.bestTime !== null) {
+        localStorage.setItem('minecraftBestTime', gameState.bestTime.toString());
+    }
+}
+
+// 更新最佳纪录显示
+function updateBestTimeDisplay() {
+    const bestTimeElement = document.getElementById('bestTime');
+    if (bestTimeElement) {
+        if (gameState.bestTime !== null) {
+            const minutes = Math.floor(gameState.bestTime / 60);
+            const seconds = gameState.bestTime % 60;
+            bestTimeElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        } else {
+            bestTimeElement.textContent = '--:--';
+        }
+    }
+}
+
+// 计算游戏用时
+function calculateGameTime() {
+    if (gameState.gameStartTime > 0) {
+        const currentTime = Date.now();
+        const elapsedSeconds = Math.floor((currentTime - gameState.gameStartTime) / 1000);
+        const difficultyConfig = DIFFICULTY_LEVELS[gameState.difficulty.toUpperCase()];
+        const totalTime = difficultyConfig ? difficultyConfig.timeLimit : 180;
+        return totalTime - elapsedSeconds;
+    }
+    return 0;
 }

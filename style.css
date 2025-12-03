@@ -132,10 +132,12 @@ button:active {
     
     .stats {
         gap: 5px;
+        max-width: 90vw;
     }
     
     .stat-item {
         padding: 3px 6px;
+        font-size: clamp(10px, 2.5vw, 13px);
     }
 }
 
@@ -164,7 +166,8 @@ button:active {
     }
     
     .stats {
-        gap: 5px;
+        gap: 4px;
+        max-width: 85vw;
     }
 }
 
@@ -195,9 +198,9 @@ button:active {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
     margin: 10px auto;
-    font-size: clamp(12px, 2.5vw, 16px);
+    font-size: clamp(11px, 2.5vw, 15px);
     width: fit-content;
     max-width: 95vw;
 }
@@ -206,10 +209,12 @@ button:active {
     display: flex;
     align-items: center;
     background-color: #444;
-    padding: 5px 10px;
+    padding: 4px 8px;
     border-radius: 5px;
     box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-    margin: 3px;
+    margin: 2px;
+    min-width: 0;
+    flex: 0 1 auto;
 }
 
 .stat-icon {
