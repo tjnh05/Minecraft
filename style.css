@@ -4,7 +4,6 @@ body {
     margin: 0;
     padding: 10px;
     color: #fff;
-    overflow-x: hidden;
 }
 
 .game-container {
@@ -22,14 +21,15 @@ h1 {
 }
 
 .difficulty-selection {
-    margin: 10px 0;
+    margin: 8px 0;
     font-size: clamp(14px, 3vw, 18px);
     color: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 5px;
+    flex-wrap: nowrap;
+    padding: 0 5px;
 }
 
 .difficulty-selection label {
@@ -41,13 +41,14 @@ h1 {
     background-color: #555;
     color: white;
     border: 1px solid #777;
-    padding: 8px 15px;
+    padding: 6px 10px;
     border-radius: 4px;
     font-size: clamp(12px, 2.5vw, 16px);
     cursor: pointer;
     transition: background-color 0.3s;
-    min-width: 60px;
-    margin: 2px;
+    min-width: 50px;
+    margin: 0 2px;
+    flex: 0 0 auto;
 }
 
 .difficulty-btn:hover {
@@ -190,7 +191,8 @@ button:active {
     background-color: #555;
     width: fit-content;
     max-width: 95vw;
-    max-height: 60vh;
+    min-height: 200px;
+    overflow: visible;
 }
 
 .cell {
@@ -201,7 +203,9 @@ button:active {
     font-size: 20px;
     cursor: pointer;
     transition: background-color 0.2s;
-    aspect-ratio: 1;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
 }
 
 .cell:hover {
@@ -343,6 +347,11 @@ button:active {
     border: 1px solid #444;
 }
 
+.empty, .mined {
+    background-color: #222;
+    border: 1px solid #444;
+}
+
 /* 怪物攻击玩家时的动画效果 */
 @keyframes attackFlash {
     0% { background-color: #00ff00; box-shadow: 0 0 5px rgba(0, 255, 0, 0.8); }
@@ -404,8 +413,15 @@ button:active {
         background-color: inherit; /* 禁用悬停效果 */
     }
     
-    /* 添加移动提示效果 */
+    /* 移除闪烁动画，改为更平滑的提示 */
     .cell:not(.player):not(.empty) {
-        animation: moveHint 2s infinite;
+        animation: none;
+        opacity: 0.9;
+    }
+    
+    .cell:not(.player):not(.empty):hover {
+        opacity: 1;
+        box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
     }
 }

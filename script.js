@@ -110,10 +110,20 @@ function initGame() {
     document.getElementById('difficulty-medium').addEventListener('click', () => changeDifficulty('medium'));
     document.getElementById('difficulty-hard').addEventListener('click', () => changeDifficulty('hard'));
     
+    console.log('初始化游戏...');
     createBoard();
+    
     // 确保玩家初始位置是空方块，以便能够移动
-    gameState.board[gameState.playerPosition.y][gameState.playerPosition.x] = BLOCK_TYPES.EMPTY;
+    if (gameState.board && gameState.board[gameState.playerPosition.y]) {
+        gameState.board[gameState.playerPosition.y][gameState.playerPosition.x] = BLOCK_TYPES.EMPTY;
+        console.log('设置玩家初始位置为空方块');
+    } else {
+        console.error('无法设置玩家初始位置');
+    }
+    
+    console.log('开始渲染游戏板...');
     renderBoard();
+    console.log('游戏板渲染完成');
     updateStats();
     updateTimerDisplay(); // 初始化计时器显示
     
@@ -131,9 +141,7 @@ function initGame() {
     window.addEventListener('resize', () => {
         const newSize = calculateBoardSize();
         if (newSize !== BOARD_SIZE) {
-            if (confirm('检测到屏幕大小变化，是否重新开始游戏以适应新尺寸？')) {
-                resetGame();
-            }
+            showCustomDialog('Minecraft矿洞探险', '检测到屏幕大小变化，是否重新开始游戏以适应新尺寸？', resetGame);
         }
     });
 }
@@ -141,6 +149,8 @@ function initGame() {
 // 创建游戏板
 function createBoard() {
     gameState.board = [];
+    
+    console.log(`开始创建游戏板，大小: ${BOARD_SIZE}x${BOARD_SIZE}`);
     
     // 根据难度获取金苹果减少比例和怪物总数
     const difficultyConfig = DIFFICULTY_LEVELS[gameState.difficulty.toUpperCase()];
@@ -166,6 +176,8 @@ function createBoard() {
         }
         gameState.board.push(row);
     }
+    
+    console.log(`游戏板初始化完成，共 ${gameState.board.length} 行`);
     
     // 随机放置怪物，总数由难度决定
     let monstersPlaced = 0;
@@ -452,6 +464,101 @@ function handleLongPress(cell) {
     gameState.longPressTimer = null;
 }
 
+// 自定义弹窗函数
+function showCustomDialog(title, message, onConfirm, showCancel = true) {
+    // 创建弹窗元素
+    const dialogOverlay = document.createElement('div');
+    dialogOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    `;
+    
+    const dialogBox = document.createElement('div');
+    dialogBox.style.cssText = `
+        background-color: #444;
+        border: 2px solid #4CAF50;
+        border-radius: 8px;
+        padding: 20px;
+        max-width: 90%;
+        width: 300px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    `;
+    
+    const dialogTitle = document.createElement('h2');
+    dialogTitle.textContent = title;
+    dialogTitle.style.cssText = `
+        color: #4CAF50;
+        margin-top: 0;
+        margin-bottom: 15px;
+    `;
+    
+    const dialogMessage = document.createElement('p');
+    dialogMessage.textContent = message;
+    dialogMessage.style.cssText = `
+        color: #fff;
+        margin-bottom: 20px;
+    `;
+    
+    const confirmButton = document.createElement('button');
+    confirmButton.textContent = '确定';
+    confirmButton.style.cssText = `
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-right: 10px;
+    `;
+    
+    // 添加事件监听器
+    confirmButton.addEventListener('click', () => {
+        document.body.removeChild(dialogOverlay);
+        if (onConfirm) onConfirm();
+    });
+    
+    // 组装弹窗
+    dialogBox.appendChild(dialogTitle);
+    dialogBox.appendChild(dialogMessage);
+    dialogBox.appendChild(confirmButton);
+    
+    // 只有在需要时才添加取消按钮
+    if (showCancel) {
+        const cancelButton = document.createElement('button');
+        cancelButton.textContent = '取消';
+        cancelButton.style.cssText = `
+            background-color: #555;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        `;
+        
+        cancelButton.addEventListener('click', () => {
+            document.body.removeChild(dialogOverlay);
+        });
+        
+        dialogBox.appendChild(cancelButton);
+    }
+    
+    dialogOverlay.appendChild(dialogBox);
+    
+    // 添加到页面
+    document.body.appendChild(dialogOverlay);
+}
+
 // 处理方块点击/触摸事件
 function handleCellTouch(x, y) {
     // 计算移动方向
@@ -484,33 +591,57 @@ function handleCellTouch(x, y) {
 // 渲染游戏板
 function renderBoard() {
     const gameBoard = document.getElementById('gameBoard');
+    if (!gameBoard) {
+        console.error('游戏板元素未找到');
+        return;
+    }
+    
     gameBoard.innerHTML = '';
+    
+    // 确保游戏板数据存在
+    if (!gameState.board || gameState.board.length === 0) {
+        console.error('游戏板数据不存在，正在重新创建');
+        createBoard();
+        if (!gameState.board || gameState.board.length === 0) {
+            console.error('无法创建游戏板数据');
+            return;
+        }
+    }
     
     // 计算合适的方块大小
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
-    const maxBoardWidth = screenWidth * 0.9;
-    const maxBoardHeight = screenHeight * 0.6;
+    const maxBoardWidth = Math.min(screenWidth * 0.9, 600); // 限制最大宽度
+    const maxBoardHeight = Math.min(screenHeight * 0.6, 600); // 限制最大高度
+    
+    // 计算方块大小，确保最小为20px，最大为40px
     const cellSize = Math.min(
-        Math.floor(maxBoardWidth / BOARD_SIZE),
-        Math.floor(maxBoardHeight / BOARD_SIZE),
-        40 // 最大方块尺寸
+        Math.max(Math.floor(maxBoardWidth / BOARD_SIZE), 20),
+        Math.max(Math.floor(maxBoardHeight / BOARD_SIZE), 20),
+        40
     );
     
     // 设置游戏板网格布局
     gameBoard.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, ${cellSize}px)`;
     gameBoard.style.gridTemplateRows = `repeat(${BOARD_SIZE}, ${cellSize}px)`;
     
+    // 调试信息
+    console.log(`游戏板大小: ${BOARD_SIZE}x${BOARD_SIZE}, 方块大小: ${cellSize}px`);
+    console.log(`游戏板数据行数: ${gameState.board.length}`);
+    
     for (let y = 0; y < BOARD_SIZE; y++) {
         for (let x = 0; x < BOARD_SIZE; x++) {
             const cell = document.createElement('div');
-            cell.className = `cell ${gameState.board[y][x]}`;
+            const blockType = gameState.board[y] && gameState.board[y][x] ? gameState.board[y][x] : BLOCK_TYPES.STONE;
+            cell.className = `cell ${blockType}`;
             cell.dataset.x = x;
             cell.dataset.y = y;
             
             // 设置方块大小
             cell.style.width = `${cellSize}px`;
             cell.style.height = `${cellSize}px`;
+            cell.style.minWidth = `${cellSize}px`;
+            cell.style.minHeight = `${cellSize}px`;
             
             // 调整字体大小以适应方块
             const fontSize = Math.max(12, Math.floor(cellSize * 0.5));
@@ -524,6 +655,8 @@ function renderBoard() {
             gameBoard.appendChild(cell);
         }
     }
+    
+    console.log(`已创建 ${gameBoard.children.length} 个方块元素`);
 }
 
 // 更新统计信息
@@ -623,8 +756,9 @@ function mineBlock() {
                 // 播放死亡音效
                 playDeathSound();
                 setTimeout(() => {
-                    alert("你被TNT炸死了！游戏结束！");
-                    resetGame();
+                    showCustomDialog("游戏结束", "你被TNT炸死了！", () => {
+                        resetGame();
+                    });
                 }, 500);
                 return;
             }
@@ -640,8 +774,9 @@ function mineBlock() {
                 // 播放死亡音效
                 playDeathSound();
                 setTimeout(() => {
-                    alert("你被反物质TNT炸死了！游戏结束！");
-                    resetGame();
+                    showCustomDialog("游戏结束", "你被反物质TNT炸死了！", () => {
+                        resetGame();
+                    });
                 }, 500);
                 return;
             }
@@ -690,8 +825,9 @@ function mineBlock() {
                         // 播放死亡音效
                         playDeathSound();
                         setTimeout(() => {
-                            alert("你被怪物攻击多次，生命值耗尽！游戏结束！");
-                            resetGame();
+                            showCustomDialog("游戏结束", "你被怪物攻击多次，生命值耗尽！", () => {
+                                resetGame();
+                            });
                         }, 500);
                         return;
                     }
@@ -706,8 +842,9 @@ function mineBlock() {
                     // 播放死亡音效
                     playDeathSound();
                     setTimeout(() => {
-                        alert("你被岩浆烧死了！游戏结束！");
-                        resetGame();
+                        showCustomDialog("游戏结束", "你被岩浆烧死了！", () => {
+                            resetGame();
+                        });
                     }, 500);
                     return;
                 }
@@ -807,7 +944,7 @@ function moveMonsters() {
                         // 播放死亡音效
                         playDeathSound();
                         setTimeout(() => {
-                            alert("你被怪物攻击多次，生命值耗尽！游戏结束！");
+                            showCustomDialog("Minecraft矿洞探险", "你被怪物攻击多次，生命值耗尽！游戏结束！", resetGame, false);
                             resetGame();
                         }, 500);
                         return;
@@ -965,7 +1102,7 @@ function explodeAntiMatterTNT(x, y) {
                             // 播放死亡音效
                             playDeathSound();
                             setTimeout(() => {
-                                alert("你被反物质TNT炸死了！游戏结束！");
+                                showCustomDialog("Minecraft矿洞探险", "你被反物质TNT炸死了！游戏结束！", resetGame, false);
                                 resetGame();
                             }, 500);
                             return;
@@ -1070,11 +1207,10 @@ function showVictory() {
     setTimeout(() => {
         // 再次检查获胜状态，以防在延迟期间被其他事件重复触发
         if (gameState.hasWon) {
-            alert("恭喜！你消灭了所有怪物，获得了胜利！");
-            // 可以选择重置游戏或显示其他胜利画面
-            if (confirm('游戏胜利！是否重新开始新游戏？')) {
+            // 使用自定义弹窗替代alert
+            showCustomDialog("恭喜胜利！", "你消灭了所有怪物，获得了胜利！是否重新开始新游戏？", () => {
                 resetGame();
-            }
+            });
         }
     }, 2000); // 延迟2秒，让音乐有足够时间播放
 }
@@ -1127,7 +1263,7 @@ function gameOverTimeout() {
     // 播放死亡音效
     playDeathSound();
     setTimeout(() => {
-        alert("时间到！你没有在规定时间内消灭所有怪物，游戏失败！");
+        showCustomDialog("Minecraft矿洞探险", "时间到！你没有在规定时间内消灭所有怪物，游戏失败！", resetGame, false);
         resetGame();
     }, 500);
 }
@@ -1240,7 +1376,7 @@ function playLargerExplosionSound() {
 
 // 退出游戏函数
 function exitGame() {
-    if (confirm('确定要退出游戏吗？')) {
+    showCustomDialog('Minecraft矿洞探险', '确定要退出游戏吗？', () => {
         // 清除计时器
         if (gameState.timer) {
             clearInterval(gameState.timer);
@@ -1254,7 +1390,7 @@ function exitGame() {
         document.getElementById('moveDownBtn').style.display = 'none';
         document.getElementById('exitBtn').style.display = 'none';
         window.close();
-    }
+    });
 }
 
 // 播放获得物品声音
