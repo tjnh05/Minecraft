@@ -472,6 +472,225 @@ button:active {
     100% { opacity: 0.3; }
 }
 
+/* 帮助按钮样式 */
+.help-container {
+    margin: 15px auto;
+    text-align: center;
+}
+
+.help-btn {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: clamp(12px, 2.5vw, 14px);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.help-btn:hover {
+    background: linear-gradient(135deg, #45a049, #3d8b40);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+
+.help-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 3px rgba(0,0,0,0.3);
+}
+
+/* 帮助弹窗样式 */
+.help-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+.help-modal.show {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.help-content {
+    background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+    border: 2px solid #4CAF50;
+    border-radius: 12px;
+    max-width: 90vw;
+    max-height: 90vh;
+    width: 500px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    animation: slideIn 0.3s ease;
+}
+
+.help-header {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+}
+
+.help-header h3 {
+    margin: 0;
+    font-size: clamp(16px, 3vw, 20px);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+}
+
+.close-btn:hover {
+    background-color: rgba(255,255,255,0.2);
+}
+
+.help-body {
+    padding: 20px;
+    max-height: calc(90vh - 80px);
+    overflow-y: auto;
+    color: #fff;
+}
+
+.help-section {
+    margin-bottom: 20px;
+}
+
+.help-section h4 {
+    color: #4CAF50;
+    margin-bottom: 10px;
+    font-size: clamp(14px, 2.5vw, 16px);
+}
+
+.help-section p {
+    margin: 5px 0;
+    font-size: clamp(12px, 2.5vw, 14px);
+    line-height: 1.4;
+}
+
+.control-group {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: rgba(255,255,255,0.05);
+    border-radius: 8px;
+}
+
+.control-group p {
+    color: #87CEEB;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.control-group ul {
+    margin: 8px 0 0 0;
+    padding-left: 20px;
+}
+
+.control-group li {
+    margin: 5px 0;
+    font-size: clamp(11px, 2.5vw, 13px);
+}
+
+.help-section ul {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.help-section li {
+    margin: 5px 0;
+    font-size: clamp(11px, 2.5vw, 13px);
+}
+
+.help-footer {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #444;
+    text-align: center;
+    color: #888;
+    font-size: clamp(11px, 2.5vw, 13px);
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { 
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to { 
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .help-content {
+        width: 95vw;
+        max-height: 95vh;
+    }
+    
+    .help-body {
+        padding: 15px;
+    }
+    
+    .help-section {
+        margin-bottom: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .help-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    
+    .help-content {
+        width: 98vw;
+        border-radius: 8px;
+    }
+    
+    .help-header {
+        padding: 12px 15px;
+    }
+    
+    .help-body {
+        padding: 12px;
+    }
+    
+    .control-group {
+        padding: 8px;
+    }
+}
+
 /* 触控设备上的特殊样式 */
 @media (hover: none) and (pointer: coarse) {
     .cell {

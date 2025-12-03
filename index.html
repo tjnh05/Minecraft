@@ -36,12 +36,72 @@
         </div>
         <div id="gameBoard" class="game-board"></div>
         
-        <div class="game-info">
-            <p>😊笑脸是玩家位置，带有绿色脉动光晕效果。挖掘岩浆会结束游戏！</p>
-            <p id="touchInstructions" style="display: none; color: #87CEEB;">📱触控操作：点击相邻方块移动，长按玩家位置挖掘</p>
-            <p>⌨️键盘操作：方向键/WASD移动到相邻方块，空格键挖掘当前方块</p>
-            <p>💡提示：消灭所有怪物即可获胜，挑战最快纪录！</p>
-            <p>作者: 王溪璞</p>
+        <div class="help-container">
+            <button id="helpToggle" class="help-btn">❓ 游戏帮助</button>
+        </div>
+        
+        <!-- 帮助弹窗 -->
+        <div id="helpModal" class="help-modal">
+            <div class="help-content">
+                <div class="help-header">
+                    <h3>🎮 游戏帮助</h3>
+                    <button id="closeHelp" class="close-btn">✕</button>
+                </div>
+                <div class="help-body">
+                    <div class="help-section">
+                        <h4>🎯 游戏目标</h4>
+                        <p>在限定时间内消灭所有怪物获得胜利，收集钻石资源，挑战最快纪录！</p>
+                    </div>
+                    
+                    <div class="help-section">
+                        <h4>🎮 操作方式</h4>
+                        <div class="control-group">
+                            <p><strong>⌨️ 键盘操作（PC/笔记本）</strong></p>
+                            <ul>
+                                <li>方向键/WASD：移动到相邻方块</li>
+                                <li>空格键：挖掘当前方块</li>
+                                <li>数字键1-5：使用对应道具</li>
+                            </ul>
+                        </div>
+                        <div class="control-group">
+                            <p><strong>📱 触控操作（手机/平板）</strong></p>
+                            <ul>
+                                <li>点击相邻方块：移动到该位置</li>
+                                <li>长按玩家位置：挖掘当前方块</li>
+                                <li>轻触其他位置：自动寻路移动</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="help-section">
+                        <h4>😊 玩家识别</h4>
+                        <p>笑脸图标带有绿色脉动光晕，轻松定位玩家位置</p>
+                    </div>
+                    
+                    <div class="help-section">
+                        <h4>⚠️ 注意事项</h4>
+                        <ul>
+                            <li>挖掘岩浆会立即结束游戏</li>
+                            <li>被怪物攻击会减少生命值</li>
+                            <li>金苹果可以恢复生命值</li>
+                            <li>钻石矿需要挖掘两次</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="help-section">
+                        <h4>🏆 难度设置</h4>
+                        <ul>
+                            <li>简单：3分钟，金苹果效果100%</li>
+                            <li>中等：2分钟，金苹果效果100%</li>
+                            <li>困难：1分钟，金苹果效果67%</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="help-footer">
+                        <p>作者: 王溪璞</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <script src="script.js"></script>

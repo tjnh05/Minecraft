@@ -147,6 +147,9 @@ function initGame() {
             showCustomDialog('Minecraft矿洞探险', '检测到屏幕大小变化，是否重新开始游戏以适应新尺寸？', resetGame);
         }
     });
+    
+    // 设置帮助弹窗事件监听器
+    setupHelpModal();
 }
 
 // 创建游戏板
@@ -1150,7 +1153,46 @@ function explodeAntiMatterTNT(x, y) {
     }, 700);
 }
 
-// 检查是否所有怪物都被消灭
+// 设置帮助弹窗
+function setupHelpModal() {
+    const helpToggle = document.getElementById('helpToggle');
+    const helpModal = document.getElementById('helpModal');
+    const closeHelp = document.getElementById('closeHelp');
+    
+    // 打开帮助弹窗
+    helpToggle.addEventListener('click', () => {
+        helpModal.classList.add('show');
+        // 防止背景滚动
+        document.body.style.overflow = 'hidden';
+    });
+    
+    // 关闭帮助弹窗
+    closeHelp.addEventListener('click', closeHelpModal);
+    
+    // 点击背景关闭弹窗
+    helpModal.addEventListener('click', (event) => {
+        if (event.target === helpModal) {
+            closeHelpModal();
+        }
+    });
+    
+    // ESC键关闭弹窗
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && helpModal.classList.contains('show')) {
+            closeHelpModal();
+        }
+    });
+}
+
+// 关闭帮助弹窗
+function closeHelpModal() {
+    const helpModal = document.getElementById('helpModal');
+    helpModal.classList.remove('show');
+    // 恢复背景滚动
+    document.body.style.overflow = '';
+}
+
+// 检查所有怪物是否被消灭
 function checkAllMonstersEliminated() {
     for (let y = 0; y < BOARD_SIZE; y++) {
         for (let x = 0; x < BOARD_SIZE; x++) {
