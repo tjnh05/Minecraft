@@ -639,6 +639,105 @@ button:active {
     font-size: clamp(11px, 2.5vw, 13px);
 }
 
+/* 方块预览网格 */
+.blocks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.block-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 8px;
+    background-color: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    transition: transform 0.2s ease;
+}
+
+.block-item:hover {
+    transform: translateY(-2px);
+    background-color: rgba(255,255,255,0.1);
+}
+
+.block-preview {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #333;
+    margin-bottom: 5px;
+    border-radius: 3px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 方块预览样式 */
+.block-preview.stone {
+    background-color: #808080;
+}
+
+.block-preview.diamond-ore {
+    background-color: #b0e0e6;
+}
+
+.block-preview.lava {
+    background-color: #ff4500;
+}
+
+.block-preview.wood {
+    background-color: #8B4513;
+}
+
+.block-preview.tnt {
+    background-color: #FF4500;
+}
+
+.block-preview.antimatter-tnt {
+    background-color: #9932CC;
+}
+
+.block-preview.water {
+    background-color: #1E90FF;
+}
+
+.block-preview.cobblestone {
+    background-color: #696969;
+}
+
+.block-preview.glass {
+    background-color: #87CEEB;
+}
+
+.block-preview.dirt {
+    background-color: #8B4513;
+}
+
+.block-preview.golden-apple {
+    background-color: #FFD700;
+}
+
+.block-preview.empty {
+    background-color: #222;
+}
+
+.block-preview.monster {
+    background-color: #32CD32;
+}
+
+.block-preview.zombie {
+    background-color: #9ACD32;
+}
+
+.block-item span {
+    font-size: clamp(10px, 2vw, 12px);
+    line-height: 1.2;
+    color: #ccc;
+}
+
 /* 动画效果 */
 @keyframes fadeIn {
     from { opacity: 0; }
@@ -713,6 +812,21 @@ button:active {
     
     .help-container {
         margin: 8px auto;
+    }
+    
+    .blocks-grid {
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        gap: 8px;
+    }
+    
+    .block-item {
+        padding: 6px;
+    }
+    
+    .block-preview {
+        width: 25px;
+        height: 25px;
+        font-size: 14px;
     }
 }
 

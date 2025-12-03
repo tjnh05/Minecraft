@@ -849,20 +849,14 @@ function mineBlock() {
                 }
                 break;
             case BLOCK_TYPES.LAVA:
-                gameState.health -= 2; // 岩浆伤害更高
-                updateHealthDisplay();
-                // 播放受伤声音
-                playHurtSound();
-                if (gameState.health <= 0) {
-                    // 播放死亡音效
-                    playDeathSound();
-                    setTimeout(() => {
-                        showCustomDialog("游戏结束", "你被岩浆烧死了！", () => {
-                            resetGame();
-                        });
-                    }, 500);
-                    return;
-                }
+                // 播放死亡音效
+                playDeathSound();
+                setTimeout(() => {
+                    showCustomDialog("游戏结束", "你被岩浆烧死了！", () => {
+                        resetGame();
+                    });
+                }, 500);
+                return; // 立即返回，不执行后续逻辑
                 break;
             case BLOCK_TYPES.EMPTY: // 如果当前位置已经是空方块，不显示任何提示
                 return;
