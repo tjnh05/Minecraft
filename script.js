@@ -30,7 +30,6 @@ const BLOCK_TYPES = {
     COBBLESTONE: 'cobblestone',
     MONSTER: 'monster',
     ZOMBIE: 'zombie',
-    CREEPER: 'creeper',
     GLASS: 'glass',
     DIRT: 'dirt',
     GOLDEN_APPLE: 'golden-apple'
@@ -39,8 +38,7 @@ const BLOCK_TYPES = {
 // 生物类型
 const MOB_TYPES = {
     MONSTER: 'monster',
-    ZOMBIE: 'zombie',
-    CREEPER: 'creeper'
+    ZOMBIE: 'zombie'
 };
 
 // 游戏状态
@@ -202,12 +200,10 @@ function createBoard() {
             // 随机选择怪物类型
             const mobRand = Math.random();
             let monsterType;
-            if (mobRand < 0.33) {
+            if (mobRand < 0.6) {
                 monsterType = BLOCK_TYPES.MONSTER;
-            } else if (mobRand < 0.67) {
-                monsterType = BLOCK_TYPES.ZOMBIE;
             } else {
-                monsterType = BLOCK_TYPES.CREEPER;
+                monsterType = BLOCK_TYPES.ZOMBIE;
             }
             
             gameState.board[y][x] = monsterType;
@@ -221,7 +217,7 @@ function createBoard() {
         for (let x = 0; x < BOARD_SIZE; x++) {
             // 跳过玩家安全区域和已放置怪物的位置
             if ((Math.abs(x - centerX) <= safeZoneSize && Math.abs(y - centerY) <= safeZoneSize) || 
-                [BLOCK_TYPES.MONSTER, BLOCK_TYPES.ZOMBIE, BLOCK_TYPES.CREEPER].includes(gameState.board[y][x])) {
+                [BLOCK_TYPES.MONSTER, BLOCK_TYPES.ZOMBIE].includes(gameState.board[y][x])) {
                 continue;
             }
             
@@ -814,7 +810,6 @@ function mineBlock() {
                 break;
             case BLOCK_TYPES.MONSTER:
             case BLOCK_TYPES.ZOMBIE:
-            case BLOCK_TYPES.CREEPER:
                 if (gameState.hasDiamondSword) {
                     // 有钻石剑可以杀死怪物
                     // 播放怪物死亡音效
@@ -916,7 +911,7 @@ function moveMonsters() {
     for (let y = 0; y < BOARD_SIZE; y++) {
         for (let x = 0; x < BOARD_SIZE; x++) {
             // 检查是否是怪物
-            if ([BLOCK_TYPES.MONSTER, BLOCK_TYPES.ZOMBIE, BLOCK_TYPES.CREEPER].includes(gameState.board[y][x])) {
+            if ([BLOCK_TYPES.MONSTER, BLOCK_TYPES.ZOMBIE].includes(gameState.board[y][x])) {
                 // 计算怪物与玩家的距离
                 const dx = gameState.playerPosition.x - x;
                 const dy = gameState.playerPosition.y - y;
@@ -1027,7 +1022,7 @@ function explodeTNT(x, y) {
                     // 不要清除玩家位置
                     if (nx !== gameState.playerPosition.x || ny !== gameState.playerPosition.y) {
                         // 如果是怪物，直接清除
-                        if ([BLOCK_TYPES.MONSTER, BLOCK_TYPES.ZOMBIE, BLOCK_TYPES.CREEPER].includes(gameState.board[ny][nx])) {
+                        if ([BLOCK_TYPES.MONSTER, BLOCK_TYPES.ZOMBIE].includes(gameState.board[ny][nx])) {
                             gameState.board[ny][nx] = BLOCK_TYPES.EMPTY;
                         }
                         // 如果是其他方块，有一定几率清除
@@ -1102,7 +1097,7 @@ function explodeAntiMatterTNT(x, y) {
                     // 不要清除玩家位置
                     if (nx !== gameState.playerPosition.x || ny !== gameState.playerPosition.y) {
                         // 如果是怪物，直接清除
-                        if ([BLOCK_TYPES.MONSTER, BLOCK_TYPES.ZOMBIE, BLOCK_TYPES.CREEPER].includes(gameState.board[ny][nx])) {
+                        if ([BLOCK_TYPES.MONSTER, BLOCK_TYPES.ZOMBIE].includes(gameState.board[ny][nx])) {
                             gameState.board[ny][nx] = BLOCK_TYPES.EMPTY;
                         }
                         // 如果是其他方块，有一定几率清除
@@ -1159,7 +1154,7 @@ function explodeAntiMatterTNT(x, y) {
 function checkAllMonstersEliminated() {
     for (let y = 0; y < BOARD_SIZE; y++) {
         for (let x = 0; x < BOARD_SIZE; x++) {
-            if ([BLOCK_TYPES.MONSTER, BLOCK_TYPES.ZOMBIE, BLOCK_TYPES.CREEPER].includes(gameState.board[y][x])) {
+            if ([BLOCK_TYPES.MONSTER, BLOCK_TYPES.ZOMBIE].includes(gameState.board[y][x])) {
                 return false; // 如果还有怪物，返回false
             }
         }

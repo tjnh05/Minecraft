@@ -345,12 +345,7 @@ button:active {
     animation: monsterGlow 1.5s infinite alternate;
 }
 
-.creeper {
-    background-color: #006400;
-    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='40' fill='%23006400'/%3E%3Ccircle cx='15' cy='15' r='4' fill='%23000'/%3E%3Ccircle cx='25' cy='15' r='4' fill='%23000'/%3E%3Crect x='15' y='22' width='10' height='3' fill='%23000'/%3E%3C/svg%3E");
-    border: 3px solid #000000;
-    animation: monsterGlow 1.5s infinite alternate;
-}
+
 
 /* 怪物红色闪光动画 */
 @keyframes monsterGlow {
