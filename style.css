@@ -21,7 +21,7 @@ h1 {
 }
 
 .difficulty-selection {
-    margin: 8px 0;
+    margin: 8px auto;
     font-size: clamp(14px, 3vw, 18px);
     color: #fff;
     display: flex;
@@ -30,7 +30,8 @@ h1 {
     gap: 3px;
     flex-wrap: nowrap;
     padding: 0 2px;
-    width: 100%;
+    width: fit-content;
+    max-width: 95vw;
     box-sizing: border-box;
 }
 
@@ -50,7 +51,7 @@ h1 {
     transition: background-color 0.3s;
     min-width: 45px;
     margin: 0 1px;
-    flex: 0 0 auto;
+    flex: 1;
     white-space: nowrap;
     box-sizing: border-box;
 }
@@ -161,6 +162,10 @@ button:active {
         width: 80%;
         max-width: 200px;
     }
+    
+    .stats {
+        gap: 5px;
+    }
 }
 
 @media (max-width: 320px) {
@@ -181,8 +186,10 @@ button:active {
     justify-content: center;
     flex-wrap: wrap;
     gap: 10px;
-    margin: 10px 0;
+    margin: 10px auto;
     font-size: clamp(12px, 2.5vw, 16px);
+    width: fit-content;
+    max-width: 95vw;
 }
 
 .stat-item {
