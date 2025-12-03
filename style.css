@@ -27,9 +27,11 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 5px;
+    gap: 3px;
     flex-wrap: nowrap;
-    padding: 0 5px;
+    padding: 0 2px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .difficulty-selection label {
@@ -41,14 +43,16 @@ h1 {
     background-color: #555;
     color: white;
     border: 1px solid #777;
-    padding: 6px 10px;
+    padding: 6px 8px;
     border-radius: 4px;
     font-size: clamp(12px, 2.5vw, 16px);
     cursor: pointer;
     transition: background-color 0.3s;
-    min-width: 50px;
-    margin: 0 2px;
+    min-width: 45px;
+    margin: 0 1px;
     flex: 0 0 auto;
+    white-space: nowrap;
+    box-sizing: border-box;
 }
 
 .difficulty-btn:hover {
@@ -136,8 +140,16 @@ button:active {
 
 @media (max-width: 480px) {
     .difficulty-selection {
-        flex-direction: column;
-        gap: 5px;
+        gap: 2px;
+        padding: 0 5px;
+    }
+    
+    .difficulty-btn {
+        padding: 8px 5px;
+        font-size: clamp(12px, 3vw, 14px);
+        min-width: 40px;
+        margin: 0;
+        flex: 1;
     }
     
     .controls {
@@ -145,9 +157,22 @@ button:active {
         align-items: center;
     }
     
-    button {
+    .controls button {
         width: 80%;
         max-width: 200px;
+    }
+}
+
+@media (max-width: 320px) {
+    .difficulty-selection {
+        padding: 0 2px;
+        gap: 1px;
+    }
+    
+    .difficulty-btn {
+        padding: 6px 3px;
+        font-size: 11px;
+        min-width: 35px;
     }
 }
 

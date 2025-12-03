@@ -670,6 +670,18 @@ function updateHealthDisplay() {
     const healthElement = document.getElementById('healthCount');
     if (healthElement) {
         healthElement.textContent = gameState.health;
+        
+        // 根据生命值改变颜色
+        if (gameState.health <= 2) {
+            healthElement.style.color = '#ff3333'; // 红色 - 危险
+            healthElement.style.textShadow = '0 0 5px rgba(255, 0, 0, 0.5)';
+        } else if (gameState.health <= 5) {
+            healthElement.style.color = '#ff9900'; // 橙色 - 警告
+            healthElement.style.textShadow = '0 0 3px rgba(255, 153, 0, 0.3)';
+        } else {
+            healthElement.style.color = '#ff6666'; // 浅红色 - 正常
+            healthElement.style.textShadow = '0 0 3px rgba(255, 102, 102, 0.3)';
+        }
     }
 }
 
@@ -1222,14 +1234,20 @@ function updateTimerDisplay() {
     const timeString = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     document.getElementById('timerCount').textContent = timeString;
     
-    // 当时间少于30秒时，让时间显示变红以提醒玩家
+    // 根据剩余时间改变颜色以提醒玩家
     const timerElement = document.getElementById('timerCount');
-    if (gameState.timeLeft <= 30) {
-        timerElement.style.color = 'red';
+    if (gameState.timeLeft <= 10) {
+        timerElement.style.color = '#ff3333'; // 红色 - 非常紧急
         timerElement.style.fontWeight = 'bold';
+        timerElement.style.textShadow = '0 0 5px rgba(255, 0, 0, 0.5)';
+    } else if (gameState.timeLeft <= 30) {
+        timerElement.style.color = '#ff9900'; // 橙色 - 紧急
+        timerElement.style.fontWeight = 'bold';
+        timerElement.style.textShadow = '0 0 3px rgba(255, 153, 0, 0.3)';
     } else {
-        timerElement.style.color = 'initial';
-        timerElement.style.fontWeight = 'initial';
+        timerElement.style.color = '#4CAF50'; // 绿色 - 正常
+        timerElement.style.fontWeight = 'bold';
+        timerElement.style.textShadow = '0 0 3px rgba(76, 175, 80, 0.3)';
     }
 }
 
