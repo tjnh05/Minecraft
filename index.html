@@ -10,9 +10,7 @@
 <body>
     <div class="game-container">
         <h1>Minecraft矿洞探险</h1>
-        <div class="instructions">
-            <p>作者: 王溪璞 | 使用方向键或WASD移动，空格键挖掘方块</p>
-        </div>
+        
         <div class="difficulty-selection">
             <label>选择难度: </label>
             <button id="difficulty-easy" class="difficulty-btn">简单</button>
@@ -30,16 +28,12 @@
             </div>
         </div>
         <div id="gameBoard" class="game-board"></div>
-        <div class="controls">
-            <button id="mineBtn">挖掘 (空格键)</button>
-            <button id="moveUpBtn">上 (↑/W)</button>
-            <button id="moveLeftBtn">左 (←/A)</button>
-            <button id="moveRightBtn">右 (→/D)</button>
-            <button id="moveDownBtn">下 (↓/S)</button>
-            <button id="exitBtn">退出游戏</button>
-        </div>
+        
         <div class="game-info">
             <p>绿色方块是玩家位置。挖掘岩浆会结束游戏！</p>
+            <p id="touchInstructions" style="display: none; color: #87CEEB;">触控操作：点击方块移动，长按玩家位置挖掘</p>
+            <p>键盘操作：方向键/WASD移动，空格键挖掘</p>
+            <p>作者: 王溪璞</p>
         </div>
     </div>
     <script src="script.js"></script>

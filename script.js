@@ -1,5 +1,5 @@
 // 游戏配置
-const BOARD_SIZE = 15;
+let BOARD_SIZE = 15; // 将改为根据屏幕大小动态调整
 const DIFFICULTY_LEVELS = {
     EASY: { 
         timeLimit: 180, // 3分钟
@@ -61,11 +61,50 @@ let gameState = {
     blockStates: {}, // 存储需要多次点击的方块状态
     timer: null, // 计时器
     timeLeft: 180, // 剩余时间（秒），初始为中等难度的180秒
-    hasWon: false // 标记游戏是否已获胜
+    hasWon: false, // 标记游戏是否已获胜
+    // 触控相关状态
+    touchStartTime: 0, // 触摸开始时间
+    touchPosition: null, // 触摸位置
+    longPressTimer: null, // 长按计时器
+    isTouchDevice: false // 是否为触控设备
 };
+
+// 根据屏幕大小计算合适的游戏板尺寸
+function calculateBoardSize() {
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    const maxBoardWidth = screenWidth * 0.9; // 游戏板最大宽度为屏幕宽度的90%
+    const maxBoardHeight = screenHeight * 0.6; // 游戏板最大高度为屏幕高度的60%
+    
+    // 计算每个方块的最大尺寸（考虑边距和间隙）
+    const maxCellSize = Math.floor(Math.min(maxBoardWidth, maxBoardHeight) / 15);
+    
+    // 根据方块大小计算合适的游戏板尺寸
+    if (maxCellSize >= 40) {
+        return 15; // 大屏幕，使用15x15
+    } else if (maxCellSize >= 30) {
+        return 12; // 中等屏幕，使用12x12
+    } else if (maxCellSize >= 25) {
+        return 10; // 小屏幕，使用10x10
+    } else {
+        return 8;  // 超小屏幕，使用8x8
+    }
+}
 
 // 初始化游戏
 function initGame() {
+    // 检测是否为触控设备
+    gameState.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    // 根据屏幕大小调整游戏板尺寸
+    BOARD_SIZE = calculateBoardSize();
+    
+    // 更新玩家初始位置为游戏板中心
+    gameState.playerPosition = { 
+        x: Math.floor(BOARD_SIZE / 2), 
+        y: Math.floor(BOARD_SIZE / 2) 
+    };
+    
     // 设置难度选择按钮事件监听器
     document.getElementById('difficulty-easy').addEventListener('click', () => changeDifficulty('easy'));
     document.getElementById('difficulty-medium').addEventListener('click', () => changeDifficulty('medium'));
@@ -73,29 +112,30 @@ function initGame() {
     
     createBoard();
     // 确保玩家初始位置是空方块，以便能够移动
-    gameState.board[7][7] = BLOCK_TYPES.EMPTY;
+    gameState.board[gameState.playerPosition.y][gameState.playerPosition.x] = BLOCK_TYPES.EMPTY;
     renderBoard();
     updateStats();
     updateTimerDisplay(); // 初始化计时器显示
     
-    // 绑定事件
-    document.getElementById('mineBtn').addEventListener('click', mineBlock);
-    document.getElementById('moveUpBtn').addEventListener('click', () => movePlayer(0, -1));
-    document.getElementById('moveLeftBtn').addEventListener('click', () => movePlayer(-1, 0));
-    document.getElementById('moveRightBtn').addEventListener('click', () => movePlayer(1, 0));
-    document.getElementById('moveDownBtn').addEventListener('click', () => movePlayer(0, 1));
-    document.getElementById('exitBtn').addEventListener('click', exitGame);
+    
     
     // 添加键盘控制
     document.addEventListener('keydown', handleKeyPress);
     
-    // Show controls since the start button is removed - controls are available immediately
-    document.getElementById('mineBtn').style.display = 'inline-block';
-    document.getElementById('moveUpBtn').style.display = 'inline-block';
-    document.getElementById('moveLeftBtn').style.display = 'inline-block';
-    document.getElementById('moveRightBtn').style.display = 'inline-block';
-    document.getElementById('moveDownBtn').style.display = 'inline-block';
-    document.getElementById('exitBtn').style.display = 'inline-block';
+    // 如果是触控设备，添加触控事件
+    if (gameState.isTouchDevice) {
+        setupTouchControls();
+    }
+    
+    // 监听窗口大小变化，动态调整游戏板
+    window.addEventListener('resize', () => {
+        const newSize = calculateBoardSize();
+        if (newSize !== BOARD_SIZE) {
+            if (confirm('检测到屏幕大小变化，是否重新开始游戏以适应新尺寸？')) {
+                resetGame();
+            }
+        }
+    });
 }
 
 // 创建游戏板
@@ -107,12 +147,17 @@ function createBoard() {
     const goldenAppleReduction = difficultyConfig ? difficultyConfig.goldenAppleReduction : 1;
     const totalMonsters = difficultyConfig ? difficultyConfig.totalMonsters : 10;
     
+    // 计算游戏板中心位置
+    const centerX = Math.floor(BOARD_SIZE / 2);
+    const centerY = Math.floor(BOARD_SIZE / 2);
+    const safeZoneSize = Math.max(1, Math.floor(BOARD_SIZE / 5)); // 安全区大小为游戏板大小的1/5
+    
     // 初始化游戏板
     for (let y = 0; y < BOARD_SIZE; y++) {
         const row = [];
         for (let x = 0; x < BOARD_SIZE; x++) {
             // 在中心附近生成玩家安全区域
-            if (Math.abs(x - 7) <= 2 && Math.abs(y - 7) <= 2) {
+            if (Math.abs(x - centerX) <= safeZoneSize && Math.abs(y - centerY) <= safeZoneSize) {
                 row.push(BLOCK_TYPES.STONE);
             } else {
                 // 初始化为石头
@@ -131,7 +176,7 @@ function createBoard() {
         const y = Math.floor(Math.random() * BOARD_SIZE);
         
         // 确保不在玩家安全区域内放置怪物
-        if (Math.abs(x - 7) <= 2 && Math.abs(y - 7) <= 2) {
+        if (Math.abs(x - centerX) <= safeZoneSize && Math.abs(y - centerY) <= safeZoneSize) {
             continue;
         }
         
@@ -158,15 +203,18 @@ function createBoard() {
     for (let y = 0; y < BOARD_SIZE; y++) {
         for (let x = 0; x < BOARD_SIZE; x++) {
             // 跳过玩家安全区域和已放置怪物的位置
-            if ((Math.abs(x - 7) <= 2 && Math.abs(y - 7) <= 2) || 
+            if ((Math.abs(x - centerX) <= safeZoneSize && Math.abs(y - centerY) <= safeZoneSize) || 
                 [BLOCK_TYPES.MONSTER, BLOCK_TYPES.ZOMBIE, BLOCK_TYPES.CREEPER].includes(gameState.board[y][x])) {
                 continue;
             }
             
             // 根据位置生成不同的方块
             const rand = Math.random();
+            const topLayer = Math.floor(BOARD_SIZE * 0.2); // 顶层为游戏板大小的20%
+            const middleLayer = Math.floor(BOARD_SIZE * 0.53); // 中层为游戏板大小的53%
+            const deepLayer = Math.floor(BOARD_SIZE * 0.8); // 深层为游戏板大小的80%
             
-            if (y < 3) {
+            if (y < topLayer) {
                 // 顶层多为石头、木头、泥土、玻璃
                 if (rand < 0.35) {
                     gameState.board[y][x] = BLOCK_TYPES.STONE;
@@ -184,7 +232,7 @@ function createBoard() {
                         gameState.board[y][x] = BLOCK_TYPES.STONE; // 用石头替代部分金苹果
                     }
                 }
-            } else if (y < 8) {
+            } else if (y < middleLayer) {
                 // 中层石头、木头、鹅卵石、泥土
                 if (rand < 0.3) {
                     gameState.board[y][x] = BLOCK_TYPES.STONE;
@@ -204,7 +252,7 @@ function createBoard() {
                         gameState.board[y][x] = BLOCK_TYPES.STONE; // 用石头替代部分金苹果
                     }
                 }
-            } else if (y < 12) {
+            } else if (y < deepLayer) {
                 // 深层钻石、TNT、水、玻璃、金苹果
                 if (rand < 0.2) {
                     gameState.board[y][x] = BLOCK_TYPES.STONE;
@@ -255,10 +303,203 @@ function createBoard() {
     }
 }
 
+// 设置触控控制
+function setupTouchControls() {
+    const gameBoard = document.getElementById('gameBoard');
+    
+    // 添加触摸开始事件
+    gameBoard.addEventListener('touchstart', handleTouchStart, { passive: false });
+    gameBoard.addEventListener('mousedown', handleMouseDown); // 同时支持鼠标操作
+    
+    // 添加触摸结束事件
+    gameBoard.addEventListener('touchend', handleTouchEnd, { passive: false });
+    gameBoard.addEventListener('mouseup', handleMouseUp); // 同时支持鼠标操作
+    
+    // 添加触摸移动事件（用于防止滑动时误触）
+    gameBoard.addEventListener('touchmove', handleTouchMove, { passive: false });
+}
+
+// 处理触摸开始事件
+function handleTouchStart(event) {
+    event.preventDefault(); // 防止默认行为
+    
+    const touch = event.touches[0];
+    const cell = event.target.closest('.cell');
+    
+    if (cell) {
+        gameState.touchPosition = {
+            x: parseInt(cell.dataset.x),
+            y: parseInt(cell.dataset.y)
+        };
+        gameState.touchStartTime = Date.now();
+        
+        // 添加视觉反馈
+        cell.classList.add('touch-active');
+        
+        // 设置长按计时器（500ms后触发挖掘）
+        gameState.longPressTimer = setTimeout(() => {
+            handleLongPress(cell);
+        }, 500);
+    }
+}
+
+// 处理鼠标按下事件（用于桌面测试）
+function handleMouseDown(event) {
+    const cell = event.target.closest('.cell');
+    
+    if (cell) {
+        gameState.touchPosition = {
+            x: parseInt(cell.dataset.x),
+            y: parseInt(cell.dataset.y)
+        };
+        gameState.touchStartTime = Date.now();
+        
+        // 添加视觉反馈
+        cell.classList.add('touch-active');
+        
+        // 设置长按计时器（500ms后触发挖掘）
+        gameState.longPressTimer = setTimeout(() => {
+            handleLongPress(cell);
+        }, 500);
+    }
+}
+
+// 处理触摸移动事件
+function handleTouchMove(event) {
+    // 如果手指移动了，取消长按计时器
+    if (gameState.longPressTimer) {
+        clearTimeout(gameState.longPressTimer);
+        gameState.longPressTimer = null;
+    }
+    
+    // 移除所有活动状态
+    document.querySelectorAll('.touch-active').forEach(cell => {
+        cell.classList.remove('touch-active');
+    });
+}
+
+// 处理触摸结束事件
+function handleTouchEnd(event) {
+    event.preventDefault(); // 防止默认行为
+    
+    // 清除长按计时器
+    if (gameState.longPressTimer) {
+        clearTimeout(gameState.longPressTimer);
+        gameState.longPressTimer = null;
+    }
+    
+    // 移除所有活动状态
+    document.querySelectorAll('.touch-active').forEach(cell => {
+        cell.classList.remove('touch-active');
+    });
+    
+    // 计算触摸持续时间
+    const touchDuration = Date.now() - gameState.touchStartTime;
+    
+    // 如果是短按（少于500ms），则尝试移动到该位置
+    if (touchDuration < 500 && gameState.touchPosition) {
+        handleCellTouch(gameState.touchPosition.x, gameState.touchPosition.y);
+    }
+    
+    // 重置触控状态
+    gameState.touchPosition = null;
+    gameState.touchStartTime = 0;
+}
+
+// 处理鼠标释放事件（用于桌面测试）
+function handleMouseUp(event) {
+    // 清除长按计时器
+    if (gameState.longPressTimer) {
+        clearTimeout(gameState.longPressTimer);
+        gameState.longPressTimer = null;
+    }
+    
+    // 移除所有活动状态
+    document.querySelectorAll('.touch-active').forEach(cell => {
+        cell.classList.remove('touch-active');
+    });
+    
+    // 计算触摸持续时间
+    const touchDuration = Date.now() - gameState.touchStartTime;
+    
+    // 如果是短按（少于500ms），则尝试移动到该位置
+    if (touchDuration < 500 && gameState.touchPosition) {
+        handleCellTouch(gameState.touchPosition.x, gameState.touchPosition.y);
+    }
+    
+    // 重置触控状态
+    gameState.touchPosition = null;
+    gameState.touchStartTime = 0;
+}
+
+// 处理长按事件
+function handleLongPress(cell) {
+    const x = parseInt(cell.dataset.x);
+    const y = parseInt(cell.dataset.y);
+    
+    // 如果长按的是玩家当前位置，则挖掘当前方块
+    if (x === gameState.playerPosition.x && y === gameState.playerPosition.y) {
+        mineBlock();
+        
+        // 添加挖掘动画效果
+        cell.style.animation = 'mineAnimation 0.3s';
+        setTimeout(() => {
+            cell.style.animation = '';
+        }, 300);
+    }
+    
+    // 清除长按计时器
+    gameState.longPressTimer = null;
+}
+
+// 处理方块点击/触摸事件
+function handleCellTouch(x, y) {
+    // 计算移动方向
+    const dx = x - gameState.playerPosition.x;
+    const dy = y - gameState.playerPosition.y;
+    
+    // 确定主要移动方向（优先移动距离更大的轴）
+    if (Math.abs(dx) > Math.abs(dy)) {
+        // 水平移动
+        if (dx > 0) {
+            movePlayer(1, 0); // 向右
+        } else if (dx < 0) {
+            movePlayer(-1, 0); // 向左
+        }
+    } else if (Math.abs(dy) > 0) {
+        // 垂直移动
+        if (dy > 0) {
+            movePlayer(0, 1); // 向下
+        } else if (dy < 0) {
+            movePlayer(0, -1); // 向上
+        }
+    }
+    
+    // 如果点击的是玩家当前位置，则挖掘当前方块
+    if (dx === 0 && dy === 0) {
+        mineBlock();
+    }
+}
+
 // 渲染游戏板
 function renderBoard() {
     const gameBoard = document.getElementById('gameBoard');
     gameBoard.innerHTML = '';
+    
+    // 计算合适的方块大小
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    const maxBoardWidth = screenWidth * 0.9;
+    const maxBoardHeight = screenHeight * 0.6;
+    const cellSize = Math.min(
+        Math.floor(maxBoardWidth / BOARD_SIZE),
+        Math.floor(maxBoardHeight / BOARD_SIZE),
+        40 // 最大方块尺寸
+    );
+    
+    // 设置游戏板网格布局
+    gameBoard.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, ${cellSize}px)`;
+    gameBoard.style.gridTemplateRows = `repeat(${BOARD_SIZE}, ${cellSize}px)`;
     
     for (let y = 0; y < BOARD_SIZE; y++) {
         for (let x = 0; x < BOARD_SIZE; x++) {
@@ -266,6 +507,14 @@ function renderBoard() {
             cell.className = `cell ${gameState.board[y][x]}`;
             cell.dataset.x = x;
             cell.dataset.y = y;
+            
+            // 设置方块大小
+            cell.style.width = `${cellSize}px`;
+            cell.style.height = `${cellSize}px`;
+            
+            // 调整字体大小以适应方块
+            const fontSize = Math.max(12, Math.floor(cellSize * 0.5));
+            cell.style.fontSize = `${fontSize}px`;
             
             // 显示玩家位置
             if (x === gameState.playerPosition.x && y === gameState.playerPosition.y) {
