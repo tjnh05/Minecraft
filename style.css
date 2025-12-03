@@ -491,6 +491,10 @@ button:active {
     display: inline-flex;
     align-items: center;
     gap: 5px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    position: relative;
+    z-index: 10;
 }
 
 .help-btn:hover {
@@ -515,10 +519,11 @@ button:active {
     background-color: rgba(0, 0, 0, 0.8);
     z-index: 1000;
     animation: fadeIn 0.3s ease;
+    -webkit-overflow-scrolling: touch;
 }
 
 .help-modal.show {
-    display: flex;
+    display: flex !important;
     justify-content: center;
     align-items: center;
 }
@@ -656,26 +661,41 @@ button:active {
     .help-content {
         width: 95vw;
         max-height: 95vh;
+        margin: 10px;
     }
     
     .help-body {
         padding: 15px;
+        -webkit-overflow-scrolling: touch;
     }
     
     .help-section {
         margin-bottom: 15px;
     }
+    
+    .help-container {
+        margin: 10px auto;
+    }
+    
+    .help-btn {
+        padding: 12px 20px;
+        font-size: 14px;
+        min-height: 44px; /* 确保触控区域足够大 */
+    }
 }
 
 @media (max-width: 480px) {
     .help-btn {
-        padding: 10px 20px;
+        padding: 12px 20px;
         font-size: 14px;
+        min-height: 44px;
+        min-width: 120px;
     }
     
     .help-content {
         width: 98vw;
         border-radius: 8px;
+        max-height: 98vh;
     }
     
     .help-header {
@@ -684,10 +704,15 @@ button:active {
     
     .help-body {
         padding: 12px;
+        -webkit-overflow-scrolling: touch;
     }
     
     .control-group {
         padding: 8px;
+    }
+    
+    .help-container {
+        margin: 8px auto;
     }
 }
 

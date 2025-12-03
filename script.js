@@ -1159,26 +1159,68 @@ function setupHelpModal() {
     const helpModal = document.getElementById('helpModal');
     const closeHelp = document.getElementById('closeHelp');
     
+    if (!helpToggle || !helpModal || !closeHelp) {
+        console.error('帮助弹窗元素未找到');
+        return;
+    }
+    
     // 打开帮助弹窗
-    helpToggle.addEventListener('click', () => {
+    helpToggle.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        console.log('帮助按钮被点击');
         helpModal.classList.add('show');
+        helpModal.style.display = 'flex';
         // 防止背景滚动
         document.body.style.overflow = 'hidden';
     });
     
+    // 触摸事件支持
+    helpToggle.addEventListener('touchstart', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        console.log('帮助按钮被触摸');
+        helpModal.classList.add('show');
+        helpModal.style.display = 'flex';
+        // 防止背景滚动
+        document.body.style.overflow = 'hidden';
+    }, { passive: false });
+    
     // 关闭帮助弹窗
-    closeHelp.addEventListener('click', closeHelpModal);
+    closeHelp.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        closeHelpModal();
+    });
+    
+    closeHelp.addEventListener('touchstart', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        closeHelpModal();
+    }, { passive: false });
     
     // 点击背景关闭弹窗
     helpModal.addEventListener('click', (event) => {
         if (event.target === helpModal) {
+            event.preventDefault();
+            event.stopPropagation();
             closeHelpModal();
         }
     });
     
+    // 触摸背景关闭弹窗
+    helpModal.addEventListener('touchstart', (event) => {
+        if (event.target === helpModal) {
+            event.preventDefault();
+            event.stopPropagation();
+            closeHelpModal();
+        }
+    }, { passive: false });
+    
     // ESC键关闭弹窗
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && helpModal.classList.contains('show')) {
+            event.preventDefault();
             closeHelpModal();
         }
     });
@@ -1187,9 +1229,12 @@ function setupHelpModal() {
 // 关闭帮助弹窗
 function closeHelpModal() {
     const helpModal = document.getElementById('helpModal');
-    helpModal.classList.remove('show');
-    // 恢复背景滚动
-    document.body.style.overflow = '';
+    if (helpModal) {
+        helpModal.classList.remove('show');
+        helpModal.style.display = 'none';
+        // 恢复背景滚动
+        document.body.style.overflow = '';
+    }
 }
 
 // 检查所有怪物是否被消灭
