@@ -129,6 +129,11 @@ function initGame() {
     renderBoard();
     console.log('游戏板渲染完成');
     updateStats();
+    
+    // 根据难度设置初始时间
+    const difficultyConfig = DIFFICULTY_LEVELS[gameState.difficulty.toUpperCase()];
+    gameState.timeLeft = difficultyConfig ? difficultyConfig.timeLimit : 180;
+    
     updateTimerDisplay(); // 初始化计时器显示
     updateBestTimeDisplay(); // 更新最佳纪录显示
     
