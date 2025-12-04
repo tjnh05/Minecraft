@@ -1719,14 +1719,6 @@ function resetGame() {
     updateStats();
     updateTimerDisplay(); // 更新计时器显示
     updateBestTimeDisplay(); // 更新最佳纪录显示
-    
-    // Show controls since the start button is removed
-    document.getElementById('mineBtn').style.display = 'inline-block';
-    document.getElementById('moveUpBtn').style.display = 'inline-block';
-    document.getElementById('moveLeftBtn').style.display = 'inline-block';
-    document.getElementById('moveRightBtn').style.display = 'inline-block';
-    document.getElementById('moveDownBtn').style.display = 'inline-block';
-    document.getElementById('exitBtn').style.display = 'inline-block';
 }
 
 // 页面加载完成后初始化游戏
@@ -1800,13 +1792,6 @@ function exitGame() {
             clearInterval(gameState.timer);
             gameState.timer = null;
         }
-        // 重置按钮 display states - since we removed start button, just hide all control buttons
-        document.getElementById('mineBtn').style.display = 'none';
-        document.getElementById('moveUpBtn').style.display = 'none';
-        document.getElementById('moveLeftBtn').style.display = 'none';
-        document.getElementById('moveRightBtn').style.display = 'none';
-        document.getElementById('moveDownBtn').style.display = 'none';
-        document.getElementById('exitBtn').style.display = 'none';
         window.close();
     });
 }
