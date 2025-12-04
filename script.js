@@ -45,6 +45,7 @@ const MOB_TYPES = {
 let gameState = {
     board: [],
     playerPosition: { x: 7, y: 7 },
+    previousPosition: null, // 上一个位置，用于原路返回
     inventory: {
         diamond: 0,
         tnt: 0,
@@ -526,11 +527,36 @@ function showCustomDialog(title, message, onConfirm, showCancel = true) {
         margin-right: 10px;
     `;
     
-    // 添加事件监听器
-    confirmButton.addEventListener('click', () => {
+    // 创建关闭弹窗的函数
+    const closeDialog = () => {
         document.body.removeChild(dialogOverlay);
         if (onConfirm) onConfirm();
-    });
+    };
+    
+    // 添加事件监听器
+    confirmButton.addEventListener('click', closeDialog);
+    
+    // 添加键盘事件监听器（空格键和回车键关闭弹窗）
+    const handleKeyPress = (event) => {
+        if (event.key === ' ' || event.key === 'Enter') {
+            event.preventDefault();
+            closeDialog();
+        }
+    };
+    
+    // 添加键盘监听器
+    document.addEventListener('keydown', handleKeyPress);
+    
+    // 在弹窗关闭时移除键盘监听器
+    const originalCloseDialog = closeDialog;
+    const closeDialogWithCleanup = () => {
+        document.removeEventListener('keydown', handleKeyPress);
+        originalCloseDialog();
+    };
+    
+    // 更新关闭函数引用
+    confirmButton.removeEventListener('click', closeDialog);
+    confirmButton.addEventListener('click', closeDialogWithCleanup);
     
     // 组装弹窗
     dialogBox.appendChild(dialogTitle);
@@ -552,6 +578,7 @@ function showCustomDialog(title, message, onConfirm, showCancel = true) {
         `;
         
         cancelButton.addEventListener('click', () => {
+            document.removeEventListener('keydown', handleKeyPress);
             document.body.removeChild(dialogOverlay);
         });
         
@@ -562,6 +589,9 @@ function showCustomDialog(title, message, onConfirm, showCancel = true) {
     
     // 添加到页面
     document.body.appendChild(dialogOverlay);
+    
+    // 自动聚焦到确定按钮，使其能接收键盘事件
+    confirmButton.focus();
 }
 
 // 处理方块点击/触摸事件
@@ -699,25 +729,44 @@ function movePlayer(dx, dy) {
     if (newX >= 0 && newX < BOARD_SIZE && newY >= 0 && newY < BOARD_SIZE) {
         // 检查当前位置是否为空方块（玩家只能从空方块位置移动）
         const currentBlockType = gameState.board[gameState.playerPosition.y][gameState.playerPosition.x];
-        if (currentBlockType === BLOCK_TYPES.EMPTY) {
+        
+        // 检查是否是原路返回（如果有上一个位置且目标位置就是上一个位置）
+        const isReturningToPrevious = gameState.previousPosition && 
+                                    newX === gameState.previousPosition.x && 
+                                    newY === gameState.previousPosition.y;
+        
+        if (currentBlockType === BLOCK_TYPES.EMPTY || isReturningToPrevious) {
             // 检查目标位置是否为水方块，如果是，则不能移动
             const targetBlockType = gameState.board[newY][newX];
             if (targetBlockType === BLOCK_TYPES.WATER) {
                 return;
             }
+            
             // 如果游戏还没有开始，标记为已开始并启动计时器
             if (!gameState.hasStarted) {
                 gameState.hasStarted = true;
                 startTimer();
             }
-            // 可以移动到目标位置（除了水方块外的任何方块）
+            
+            // 保存当前位置为上一个位置（只有当当前位置是空方块时才保存）
+            if (currentBlockType === BLOCK_TYPES.EMPTY) {
+                gameState.previousPosition = { x: gameState.playerPosition.x, y: gameState.playerPosition.y };
+            }
+            
+            // 移动到目标位置
             gameState.playerPosition.x = newX;
             gameState.playerPosition.y = newY;
             renderBoard();
+            
+            // 如果是原路返回，清除上一个位置记录
+            if (isReturningToPrevious) {
+                gameState.previousPosition = null;
+            }
+            
             // 玩家移动后，怪物也移动
             moveMonsters();
         } else {
-            // 如果当前位置不是空方块，不能移动
+            // 如果当前位置不是空方块且不是原路返回，不能移动
             return;
         }
     }
