@@ -1239,10 +1239,13 @@ function setupHelpModal() {
         event.preventDefault();
         event.stopPropagation();
         console.log('帮助按钮被点击');
-        helpModal.classList.add('show');
+        // 立即显示弹窗，然后更新内容
         helpModal.style.display = 'flex';
-        // 更新帮助弹窗中的最佳纪录显示
-        updateHelpBestTimeDisplay();
+        // 使用requestAnimationFrame确保DOM更新后再添加动画类
+        requestAnimationFrame(() => {
+            helpModal.classList.add('show');
+            updateHelpBestTimeDisplay();
+        });
         // 防止背景滚动
         document.body.style.overflow = 'hidden';
     });
@@ -1252,8 +1255,13 @@ function setupHelpModal() {
         event.preventDefault();
         event.stopPropagation();
         console.log('帮助按钮被触摸');
-        helpModal.classList.add('show');
+        // 立即显示弹窗，然后更新内容
         helpModal.style.display = 'flex';
+        // 使用requestAnimationFrame确保DOM更新后再添加动画类
+        requestAnimationFrame(() => {
+            helpModal.classList.add('show');
+            updateHelpBestTimeDisplay();
+        });
         // 防止背景滚动
         document.body.style.overflow = 'hidden';
     }, { passive: false });

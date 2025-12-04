@@ -570,7 +570,7 @@ button:active {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.8);
     z-index: 1000;
-    animation: fadeIn 0.3s ease;
+    animation: fadeIn 0.15s ease;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -589,7 +589,7 @@ button:active {
     width: 500px;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-    animation: slideIn 0.3s ease;
+    animation: slideIn 0.15s ease;
 }
 
 .help-header {
@@ -880,7 +880,7 @@ button:active {
 
 @keyframes slideIn {
     from { 
-        transform: translateY(-50px);
+        transform: translateY(-30px);
         opacity: 0;
     }
     to { 
