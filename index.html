@@ -11,12 +11,13 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
     
-    <!-- 百度统计 -->
+    <!-- 百度统计（异步加载） -->
     <script>
     var _hmt = _hmt || [];
     (function() {
       var hm = document.createElement("script");
       hm.src = "https://hm.baidu.com/hm.js?476c5b0ad14227a87de85ccdbe51a1d4";
+      hm.async = true;  // 确保异步执行
       var s = document.getElementsByTagName("script")[0]; 
       s.parentNode.insertBefore(hm, s);
     })();

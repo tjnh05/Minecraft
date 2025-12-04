@@ -126,11 +126,14 @@ function trackGameStart() {
     const difficulty = gameState.difficulty;
     const timestamp = new Date().toISOString();
     
-    // 百度统计
+    // 百度统计（异步执行）
     if (ANALYTICS_CONFIG.baidu.enabled && typeof _hmt !== 'undefined') {
         try {
-            _hmt.push(['_trackEvent', 'game', 'start', difficulty, 1]);
-            console.log('百度统计已记录游戏开始');
+            // 使用setTimeout确保异步执行，不阻塞主线程
+            setTimeout(() => {
+                _hmt.push(['_trackEvent', 'game', 'start', difficulty, 1]);
+                console.log('百度统计已记录游戏开始');
+            }, 0);
         } catch (error) {
             console.log('百度统计发送失败:', error);
         }
@@ -157,11 +160,14 @@ function trackGameEnd(result, timeUsed = null) {
     const difficulty = gameState.difficulty;
     const timestamp = new Date().toISOString();
     
-    // 百度统计
+    // 百度统计（异步执行）
     if (ANALYTICS_CONFIG.baidu.enabled && typeof _hmt !== 'undefined') {
         try {
-            _hmt.push(['_trackEvent', 'game', 'end', result, timeUsed || 0]);
-            console.log('百度统计已记录游戏结束:', result);
+            // 使用setTimeout确保异步执行，不阻塞主线程
+            setTimeout(() => {
+                _hmt.push(['_trackEvent', 'game', 'end', result, timeUsed || 0]);
+                console.log('百度统计已记录游戏结束:', result);
+            }, 0);
         } catch (error) {
             console.log('百度统计发送失败:', error);
         }
