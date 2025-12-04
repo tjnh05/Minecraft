@@ -96,21 +96,17 @@ function initAnalytics() {
     // 保存用户地区信息到全局配置
     window.userRegion = isChina ? 'china' : 'overseas';
     
-    // 检查百度统计是否加载成功（仅对中国用户）
-    if (isChina) {
-        setTimeout(() => {
-            if (typeof _hmt !== 'undefined') {
-                console.log('✅ 百度统计加载成功');
-                // 发送一个测试页面访问
-                _hmt.push(['_trackPageview', location.pathname]);
-                console.log('📊 已发送页面访问统计到百度');
-            } else {
-                console.log('❌ 百度统计加载失败，将仅使用本地统计');
-            }
-        }, 2000); // 等待2秒检查
-    } else {
-        console.log('🌍 海外用户，将仅使用本地统计');
-    }
+    // 检查百度统计是否加载成功（所有用户）
+    setTimeout(() => {
+        if (typeof _hmt !== 'undefined') {
+            console.log('✅ 百度统计加载成功');
+            // 发送一个测试页面访问
+            _hmt.push(['_trackPageview', location.pathname]);
+            console.log('📊 已发送页面访问统计到百度');
+        } else {
+            console.log('❌ 百度统计加载失败，将仅使用本地统计');
+        }
+    }, 2000); // 等待2秒检查
     
     // 初始化本地统计
     initLocalStats();
@@ -145,19 +141,17 @@ function trackGameStart() {
     const difficulty = gameState.difficulty;
     const timestamp = new Date().toISOString();
     
-    // 百度统计（仅中国用户）
-    if (window.userRegion === 'china' && ANALYTICS_CONFIG.baidu.enabled && typeof _hmt !== 'undefined') {
+    // 百度统计（所有用户）
+    if (ANALYTICS_CONFIG.baidu.enabled && typeof _hmt !== 'undefined') {
         try {
             // 使用setTimeout确保异步执行，不阻塞主线程
             setTimeout(() => {
                 _hmt.push(['_trackEvent', 'game', 'start', difficulty, 1]);
-                console.log('📊 百度统计已记录游戏开始 - 难度:', difficulty);
+                console.log('📊 百度统计已记录游戏开始 - 难度:', difficulty, '地区:', window.userRegion);
             }, 0);
         } catch (error) {
             console.log('❌ 百度统计发送失败:', error);
         }
-    } else if (window.userRegion === 'overseas') {
-        console.log('🌍 海外用户，跳过百度统计');
     } else {
         console.log('⚠️ 百度统计未启用或未加载');
     }
@@ -183,19 +177,17 @@ function trackGameEnd(result, timeUsed = null) {
     const difficulty = gameState.difficulty;
     const timestamp = new Date().toISOString();
     
-    // 百度统计（仅中国用户）
-    if (window.userRegion === 'china' && ANALYTICS_CONFIG.baidu.enabled && typeof _hmt !== 'undefined') {
+    // 百度统计（所有用户）
+    if (ANALYTICS_CONFIG.baidu.enabled && typeof _hmt !== 'undefined') {
         try {
             // 使用setTimeout确保异步执行，不阻塞主线程
             setTimeout(() => {
                 _hmt.push(['_trackEvent', 'game', 'end', result, timeUsed || 0]);
-                console.log('📊 百度统计已记录游戏结束:', result);
+                console.log('📊 百度统计已记录游戏结束:', result, '地区:', window.userRegion);
             }, 0);
         } catch (error) {
             console.log('❌ 百度统计发送失败:', error);
         }
-    } else if (window.userRegion === 'overseas') {
-        console.log('🌍 海外用户，跳过百度统计');
     }
     
     // 本地统计
