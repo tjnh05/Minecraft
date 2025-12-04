@@ -776,7 +776,12 @@ function mineBlock() {
             // 播放受伤声音
             playHurtSound();
             if (gameState.health <= 0) {
-                // 播放死亡音效
+                // 立即停止计时器
+                if (gameState.timer) {
+                    clearInterval(gameState.timer);
+                    gameState.timer = null;
+                }
+                // 播放死亡音效（异步）
                 playDeathSound();
                 setTimeout(() => {
                     showCustomDialog("游戏结束", "你被TNT炸死了！", () => {
@@ -794,7 +799,12 @@ function mineBlock() {
             // 播放受伤声音
             playHurtSound();
             if (gameState.health <= 0) {
-                // 播放死亡音效
+                // 立即停止计时器
+                if (gameState.timer) {
+                    clearInterval(gameState.timer);
+                    gameState.timer = null;
+                }
+                // 播放死亡音效（异步）
                 playDeathSound();
                 setTimeout(() => {
                     showCustomDialog("游戏结束", "你被反物质TNT炸死了！", () => {
@@ -844,7 +854,12 @@ function mineBlock() {
                     // 播放受伤声音
                     playHurtSound();
                     if (gameState.health <= 0) {
-                        // 播放死亡音效
+                        // 立即停止计时器
+                        if (gameState.timer) {
+                            clearInterval(gameState.timer);
+                            gameState.timer = null;
+                        }
+                        // 播放死亡音效（异步）
                         playDeathSound();
                         setTimeout(() => {
                             showCustomDialog("游戏结束", "你被怪物攻击多次，生命值耗尽！", () => {
@@ -856,7 +871,12 @@ function mineBlock() {
                 }
                 break;
             case BLOCK_TYPES.LAVA:
-                // 播放死亡音效
+                // 立即停止计时器
+                if (gameState.timer) {
+                    clearInterval(gameState.timer);
+                    gameState.timer = null;
+                }
+                // 播放死亡音效（异步）
                 playDeathSound();
                 setTimeout(() => {
                     showCustomDialog("游戏结束", "你被岩浆烧死了！", () => {
@@ -1252,10 +1272,12 @@ function checkAllMonstersEliminated() {
 
 // 播放胜利声音
 function playVictorySound() {
-    try {
-        // 检查浏览器是否支持Web Audio API
-        if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
-            const audioCtx = new (AudioContext || webkitAudioContext)();
+    // 使用setTimeout确保异步播放，不阻塞主线程
+    setTimeout(() => {
+        try {
+            // 检查浏览器是否支持Web Audio API
+            if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+                const audioCtx = new (AudioContext || webkitAudioContext)();
             const duration = 2.0; // 持续时间
             const sampleRate = audioCtx.sampleRate;
             const numFrames = duration * sampleRate;
@@ -1281,13 +1303,14 @@ function playVictorySound() {
 
             const source = audioCtx.createBufferSource();
             source.buffer = buffer;
-            source.connect(audioCtx.destination);
-            source.start();
+                source.connect(audioCtx.destination);
+                source.start();
+            }
+        } catch (e) {
+            // 如果声音播放失败，不显示错误
+            console.log("无法播放声音: ", e);
         }
-    } catch (e) {
-        // 如果声音播放失败，不显示错误
-        console.log("无法播放声音: ", e);
-    }
+    }, 0); // 立即异步执行
 }
 
 // 显示胜利信息
@@ -1300,7 +1323,13 @@ function showVictory() {
     // 设置获胜标志
     gameState.hasWon = true;
     
-    // 播放胜利声音
+    // 立即停止计时器
+    if (gameState.timer) {
+        clearInterval(gameState.timer);
+        gameState.timer = null;
+    }
+    
+    // 播放胜利声音（异步）
     playVictorySound();
     
     // 计算并检查是否打破纪录
@@ -1383,11 +1412,18 @@ function startTimer() {
 
 // 时间到，游戏失败
 function gameOverTimeout() {
-    // 播放死亡音效
+    // 立即停止计时器
+    if (gameState.timer) {
+        clearInterval(gameState.timer);
+        gameState.timer = null;
+    }
+    
+    // 播放死亡音效（异步）
     playDeathSound();
+    
+    // 延迟显示失败提示
     setTimeout(() => {
         showCustomDialog("Minecraft矿洞探险", "时间到！你没有在规定时间内消灭所有怪物，游戏失败！", resetGame, false);
-        resetGame();
     }, 500);
 }
 
@@ -1634,9 +1670,11 @@ function playHurtSound() {
 
 // 播放死亡声音
 function playDeathSound() {
-    try {
-        if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
-            const audioCtx = new (AudioContext || webkitAudioContext)();
+    // 使用setTimeout确保异步播放，不阻塞主线程
+    setTimeout(() => {
+        try {
+            if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+                const audioCtx = new (AudioContext || webkitAudioContext)();
             const duration = 1.0;
             const sampleRate = audioCtx.sampleRate;
             const numFrames = duration * sampleRate;
@@ -1656,8 +1694,9 @@ function playDeathSound() {
             source.start();
         }
     } catch (e) {
-        console.log("无法播放死亡声音: ", e);
-    }
+            console.log("无法播放死亡声音: ", e);
+        }
+    }, 0); // 立即异步执行
 }
 
 // 更改游戏难度
