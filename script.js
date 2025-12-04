@@ -41,6 +41,18 @@ const MOB_TYPES = {
     ZOMBIE: 'zombie'
 };
 
+// 统计配置
+const ANALYTICS_CONFIG = {
+    baidu: {
+        siteId: '476c5b0ad14227a87de85ccdbe51a1d4',
+        enabled: true
+    },
+    local: {
+        enabled: true,
+        storageKey: 'minecraftGameStats'
+    }
+};
+
 // 游戏状态
 let gameState = {
     board: [],
@@ -72,6 +84,113 @@ let gameState = {
     bestTime: null // 最短胜利时间（秒）
 };
 
+// 统计功能
+function initAnalytics() {
+    // 检测是否为中国用户
+    const isChina = navigator.language.includes('zh') || 
+                   /CN|China/i.test(navigator.timezone) ||
+                   /baidu|qq|weibo/i.test(navigator.userAgent.toLowerCase());
+    
+    console.log('用户地区检测:', isChina ? '中国' : '海外');
+    
+    // 初始化本地统计
+    initLocalStats();
+}
+
+function initLocalStats() {
+    if (!ANALYTICS_CONFIG.local.enabled) return;
+    
+    try {
+        let stats = localStorage.getItem(ANALYTICS_CONFIG.local.storageKey);
+        if (!stats) {
+            stats = {
+                totalPlays: 0,
+                firstPlay: new Date().toISOString(),
+                lastPlay: null,
+                difficultyStats: {
+                    easy: 0,
+                    medium: 0,
+                    hard: 0
+                },
+                version: '1.0'
+            };
+            localStorage.setItem(ANALYTICS_CONFIG.local.storageKey, JSON.stringify(stats));
+        }
+        console.log('本地统计初始化完成');
+    } catch (error) {
+        console.log('本地存储不可用:', error);
+    }
+}
+
+function trackGameStart() {
+    const difficulty = gameState.difficulty;
+    const timestamp = new Date().toISOString();
+    
+    // 百度统计
+    if (ANALYTICS_CONFIG.baidu.enabled && typeof _hmt !== 'undefined') {
+        try {
+            _hmt.push(['_trackEvent', 'game', 'start', difficulty, 1]);
+            console.log('百度统计已记录游戏开始');
+        } catch (error) {
+            console.log('百度统计发送失败:', error);
+        }
+    }
+    
+    // 本地统计
+    if (ANALYTICS_CONFIG.local.enabled) {
+        try {
+            let stats = JSON.parse(localStorage.getItem(ANALYTICS_CONFIG.local.storageKey) || '{}');
+            stats.totalPlays = (stats.totalPlays || 0) + 1;
+            stats.lastPlay = timestamp;
+            stats.difficultyStats = stats.difficultyStats || { easy: 0, medium: 0, hard: 0 };
+            stats.difficultyStats[difficulty] = (stats.difficultyStats[difficulty] || 0) + 1;
+            
+            localStorage.setItem(ANALYTICS_CONFIG.local.storageKey, JSON.stringify(stats));
+            console.log('本地统计已记录游戏开始，总次数:', stats.totalPlays);
+        } catch (error) {
+            console.log('本地统计更新失败:', error);
+        }
+    }
+}
+
+function trackGameEnd(result, timeUsed = null) {
+    const difficulty = gameState.difficulty;
+    const timestamp = new Date().toISOString();
+    
+    // 百度统计
+    if (ANALYTICS_CONFIG.baidu.enabled && typeof _hmt !== 'undefined') {
+        try {
+            _hmt.push(['_trackEvent', 'game', 'end', result, timeUsed || 0]);
+            console.log('百度统计已记录游戏结束:', result);
+        } catch (error) {
+            console.log('百度统计发送失败:', error);
+        }
+    }
+    
+    // 本地统计
+    if (ANALYTICS_CONFIG.local.enabled) {
+        try {
+            let stats = JSON.parse(localStorage.getItem(ANALYTICS_CONFIG.local.storageKey) || '{}');
+            stats.gameEnds = stats.gameEnds || { victory: 0, defeat: 0 };
+            stats.gameEnds[result] = (stats.gameEnds[result] || 0) + 1;
+            
+            localStorage.setItem(ANALYTICS_CONFIG.local.storageKey, JSON.stringify(stats));
+            console.log('本地统计已记录游戏结束:', result);
+        } catch (error) {
+            console.log('本地统计更新失败:', error);
+        }
+    }
+}
+
+function getLocalStats() {
+    try {
+        return JSON.parse(localStorage.getItem(ANALYTICS_CONFIG.local.storageKey) || '{}');
+    } catch (error) {
+        console.log('获取本地统计失败:', error);
+        return {};
+    }
+}
+
 // 根据屏幕大小计算合适的游戏板尺寸
 function calculateBoardSize() {
     const screenWidth = window.innerWidth;
@@ -96,6 +215,9 @@ function calculateBoardSize() {
 
 // 初始化游戏
 function initGame() {
+    // 初始化统计系统
+    initAnalytics();
+    
     // 检测是否为触控设备
     gameState.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     
@@ -750,6 +872,7 @@ function movePlayer(dx, dy) {
             // 如果游戏还没有开始，标记为已开始并启动计时器
             if (!gameState.hasStarted) {
                 gameState.hasStarted = true;
+                trackGameStart(); // 记录游戏开始
                 startTimer();
             }
             
@@ -782,6 +905,7 @@ function mineBlock() {
     // 如果游戏还没有开始，标记为已开始并启动计时器
     if (!gameState.hasStarted) {
         gameState.hasStarted = true;
+        trackGameStart(); // 记录游戏开始
         startTimer();
     }
     
@@ -838,6 +962,7 @@ function mineBlock() {
                 // 播放死亡音效（异步）
                 playDeathSound();
                 setTimeout(() => {
+                    trackGameEnd('defeat');
                     showCustomDialog("游戏结束", "你被TNT炸死了！", () => {
                         resetGame();
                     });
@@ -861,6 +986,7 @@ function mineBlock() {
                 // 播放死亡音效（异步）
                 playDeathSound();
                 setTimeout(() => {
+                    trackGameEnd('defeat');
                     showCustomDialog("游戏结束", "你被反物质TNT炸死了！", () => {
                         resetGame();
                     });
@@ -913,6 +1039,8 @@ function mineBlock() {
                             clearInterval(gameState.timer);
                             gameState.timer = null;
                         }
+                        // 记录游戏失败
+                        trackGameEnd('defeat');
                         // 播放死亡音效（异步）
                         playDeathSound();
                         setTimeout(() => {
@@ -930,6 +1058,8 @@ function mineBlock() {
                     clearInterval(gameState.timer);
                     gameState.timer = null;
                 }
+                // 记录游戏失败
+                trackGameEnd('defeat');
                 // 播放死亡音效（异步）
                 playDeathSound();
                 setTimeout(() => {
@@ -1250,6 +1380,7 @@ function setupHelpModal() {
         requestAnimationFrame(() => {
             helpModal.classList.add('show');
             updateHelpBestTimeDisplay();
+            updateHelpStatsDisplay();
         });
         // 防止背景滚动
         document.body.style.overflow = 'hidden';
@@ -1266,6 +1397,7 @@ function setupHelpModal() {
         requestAnimationFrame(() => {
             helpModal.classList.add('show');
             updateHelpBestTimeDisplay();
+            updateHelpStatsDisplay();
         });
         // 防止背景滚动
         document.body.style.overflow = 'hidden';
@@ -1428,11 +1560,11 @@ function showVictory() {
         gameState.timer = null;
     }
     
-    // 播放胜利声音（异步）
-    playVictorySound();
-    
-    // 计算并检查是否打破纪录
+    // 记录游戏胜利并计算游戏时间
     const gameTime = calculateGameTime();
+    trackGameEnd('victory', gameTime);
+    
+    // 检查是否打破纪录
     let isNewRecord = false;
     let message = "你消灭了所有怪物，获得了胜利！";
     
@@ -1516,6 +1648,9 @@ function gameOverTimeout() {
         clearInterval(gameState.timer);
         gameState.timer = null;
     }
+    
+    // 记录游戏失败
+    trackGameEnd('defeat');
     
     // 播放死亡音效（异步）
     playDeathSound();
@@ -1851,6 +1986,27 @@ function updateHelpBestTimeDisplay() {
         } else {
             helpBestTimeElement.textContent = '--:--';
         }
+    }
+}
+
+// 更新帮助弹窗中的统计显示
+function updateHelpStatsDisplay() {
+    const stats = getLocalStats();
+    
+    const totalPlaysElement = document.getElementById('totalPlaysDisplay');
+    const victoryCountElement = document.getElementById('victoryCountDisplay');
+    const defeatCountElement = document.getElementById('defeatCountDisplay');
+    
+    if (totalPlaysElement) {
+        totalPlaysElement.textContent = stats.totalPlays || '--';
+    }
+    
+    if (victoryCountElement) {
+        victoryCountElement.textContent = (stats.gameEnds && stats.gameEnds.victory) || '--';
+    }
+    
+    if (defeatCountElement) {
+        defeatCountElement.textContent = (stats.gameEnds && stats.gameEnds.defeat) || '--';
     }
 }
 
