@@ -1241,6 +1241,8 @@ function setupHelpModal() {
         console.log('帮助按钮被点击');
         helpModal.classList.add('show');
         helpModal.style.display = 'flex';
+        // 更新帮助弹窗中的最佳纪录显示
+        updateHelpBestTimeDisplay();
         // 防止背景滚动
         document.body.style.overflow = 'hidden';
     });
@@ -1287,6 +1289,41 @@ function setupHelpModal() {
         }
     }, { passive: false });
     
+    // 设置重置最佳纪录按钮
+    const resetBestTimeBtn = document.getElementById('resetBestTime');
+    if (resetBestTimeBtn) {
+        resetBestTimeBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // 确认对话框
+            showCustomDialog(
+                "确认重置", 
+                "确定要清除最佳纪录吗？此操作不可恢复！", 
+                () => {
+                    resetBestTime();
+                },
+                true // 显示取消按钮
+            );
+        });
+        
+        // 触摸事件支持
+        resetBestTimeBtn.addEventListener('touchstart', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // 确认对话框
+            showCustomDialog(
+                "确认重置", 
+                "确定要清除最佳纪录吗？此操作不可恢复！", 
+                () => {
+                    resetBestTime();
+                },
+                true // 显示取消按钮
+            );
+        }, { passive: false });
+    }
+
     // ESC键关闭弹窗
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && helpModal.classList.contains('show')) {
@@ -1776,6 +1813,31 @@ function loadBestTime() {
 function saveBestTime() {
     if (gameState.bestTime !== null) {
         localStorage.setItem('minecraftBestTime', gameState.bestTime.toString());
+    }
+}
+
+// 重置最佳纪录
+function resetBestTime() {
+    localStorage.removeItem('minecraftBestTime');
+    gameState.bestTime = null;
+    updateBestTimeDisplay();
+    updateHelpBestTimeDisplay();
+    
+    // 显示重置成功提示
+    showCustomDialog("重置成功", "最佳纪录已清除！", null, false);
+}
+
+// 更新帮助弹窗中的最佳纪录显示
+function updateHelpBestTimeDisplay() {
+    const helpBestTimeElement = document.getElementById('helpBestTimeDisplay');
+    if (helpBestTimeElement) {
+        if (gameState.bestTime !== null) {
+            const minutes = Math.floor(gameState.bestTime / 60);
+            const seconds = gameState.bestTime % 60;
+            helpBestTimeElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        } else {
+            helpBestTimeElement.textContent = '--:--';
+        }
     }
 }
 
