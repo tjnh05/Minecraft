@@ -93,6 +93,18 @@ function initAnalytics() {
     
     console.log('用户地区检测:', isChina ? '中国' : '海外');
     
+    // 检查百度统计是否加载成功
+    setTimeout(() => {
+        if (typeof _hmt !== 'undefined') {
+            console.log('✅ 百度统计加载成功');
+            // 发送一个测试页面访问
+            _hmt.push(['_trackPageview', location.pathname]);
+            console.log('📊 已发送页面访问统计');
+        } else {
+            console.log('❌ 百度统计加载失败');
+        }
+    }, 2000); // 等待2秒检查
+    
     // 初始化本地统计
     initLocalStats();
 }
@@ -132,11 +144,13 @@ function trackGameStart() {
             // 使用setTimeout确保异步执行，不阻塞主线程
             setTimeout(() => {
                 _hmt.push(['_trackEvent', 'game', 'start', difficulty, 1]);
-                console.log('百度统计已记录游戏开始');
+                console.log('📊 百度统计已记录游戏开始 - 难度:', difficulty);
             }, 0);
         } catch (error) {
-            console.log('百度统计发送失败:', error);
+            console.log('❌ 百度统计发送失败:', error);
         }
+    } else {
+        console.log('⚠️ 百度统计未启用或未加载');
     }
     
     // 本地统计
