@@ -609,6 +609,8 @@ function showCustomDialog(title, message, onConfirm, showCancel = true) {
     dialogMessage.style.cssText = `
         color: #fff;
         margin-bottom: 20px;
+        white-space: pre-line;
+        line-height: 1.5;
     `;
     
     const confirmButton = document.createElement('button');
@@ -1534,17 +1536,28 @@ function showVictory() {
     const gameTime = calculateGameTime();
     trackGameEnd('victory', gameTime);
     
+    // 格式化时间显示
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+    
     // 检查是否打破纪录
     let isNewRecord = false;
-    let message = "你消灭了所有怪物，获得了胜利！";
+    const currentTimeStr = formatTime(gameTime);
+    let message = `你消灭了所有怪物，获得了胜利！\n\n⏱️ 本次用时：${currentTimeStr}`;
     
     if (gameState.bestTime === null || gameTime < gameState.bestTime) {
         gameState.bestTime = gameTime;
         saveBestTime();
         isNewRecord = true;
-        const minutes = Math.floor(gameTime / 60);
-        const seconds = gameTime % 60;
-        message = `🎉 新纪录！用时 ${minutes}:${seconds < 10 ? '0' : ''}${seconds} 消灭所有怪物！`;
+        message += `\n🎉 恭喜！创造了新的最佳纪录！`;
+    } else {
+        // 显示当前纪录时间，突出显示
+        const bestTimeStr = formatTime(gameState.bestTime);
+        message += `\n🏆 最佳纪录：${bestTimeStr}`;
+        message += `\n💪 继续努力，挑战纪录！`;
     }
     
     // 延迟显示提示框，让音乐先播放
@@ -1552,7 +1565,7 @@ function showVictory() {
         // 再次检查获胜状态，以防在延迟期间被其他事件重复触发
         if (gameState.hasWon) {
             // 使用自定义弹窗替代alert
-            showCustomDialog("恭喜胜利！", message + "是否重新开始新游戏？", () => {
+            showCustomDialog("恭喜胜利！", message + "\n\n是否重新开始新游戏？", () => {
                 resetGame();
             });
         }
@@ -1984,9 +1997,22 @@ function calculateGameTime() {
     if (gameState.gameStartTime > 0) {
         const currentTime = Date.now();
         const elapsedSeconds = Math.floor((currentTime - gameState.gameStartTime) / 1000);
+        
+        // 确保计算的时间不超过游戏总时长
         const difficultyConfig = DIFFICULTY_LEVELS[gameState.difficulty.toUpperCase()];
         const totalTime = difficultyConfig ? difficultyConfig.timeLimit : 180;
-        return totalTime - elapsedSeconds;
+        
+        // 用总时间减去剩余时间，得到实际用时
+        const actualTimeUsed = totalTime - gameState.timeLeft;
+        
+        // 使用两种方法中更合理的那个
+        // 如果elapsedSeconds看起来合理（小于总时间），使用它
+        // 否则使用actualTimeUsed
+        if (elapsedSeconds <= totalTime && elapsedSeconds > 0) {
+            return elapsedSeconds;
+        } else {
+            return actualTimeUsed;
+        }
     }
     return 0;
 }
