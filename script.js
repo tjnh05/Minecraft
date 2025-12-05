@@ -77,7 +77,6 @@ let gameState = {
     // 触控相关状态
     touchStartTime: 0, // 触摸开始时间
     touchPosition: null, // 触摸位置
-    longPressTimer: null, // 长按计时器
     isTouchDevice: false, // 是否为触控设备
     // 纪录相关状态
     gameStartTime: 0, // 游戏开始时间戳
@@ -503,11 +502,6 @@ function handleTouchStart(event) {
         
         // 添加视觉反馈
         cell.classList.add('touch-active');
-        
-        // 设置长按计时器（500ms后触发挖掘）
-        gameState.longPressTimer = setTimeout(() => {
-            handleLongPress(cell);
-        }, 500);
     }
 }
 
@@ -524,22 +518,11 @@ function handleMouseDown(event) {
         
         // 添加视觉反馈
         cell.classList.add('touch-active');
-        
-        // 设置长按计时器（500ms后触发挖掘）
-        gameState.longPressTimer = setTimeout(() => {
-            handleLongPress(cell);
-        }, 500);
     }
 }
 
 // 处理触摸移动事件
 function handleTouchMove(event) {
-    // 如果手指移动了，取消长按计时器
-    if (gameState.longPressTimer) {
-        clearTimeout(gameState.longPressTimer);
-        gameState.longPressTimer = null;
-    }
-    
     // 移除所有活动状态
     document.querySelectorAll('.touch-active').forEach(cell => {
         cell.classList.remove('touch-active');
@@ -550,22 +533,13 @@ function handleTouchMove(event) {
 function handleTouchEnd(event) {
     event.preventDefault(); // 防止默认行为
     
-    // 清除长按计时器
-    if (gameState.longPressTimer) {
-        clearTimeout(gameState.longPressTimer);
-        gameState.longPressTimer = null;
-    }
-    
     // 移除所有活动状态
     document.querySelectorAll('.touch-active').forEach(cell => {
         cell.classList.remove('touch-active');
     });
     
-    // 计算触摸持续时间
-    const touchDuration = Date.now() - gameState.touchStartTime;
-    
-    // 如果是短按（少于500ms），则尝试移动到该位置
-    if (touchDuration < 500 && gameState.touchPosition) {
+    // 处理触摸操作
+    if (gameState.touchPosition) {
         handleCellTouch(gameState.touchPosition.x, gameState.touchPosition.y);
     }
     
@@ -576,22 +550,13 @@ function handleTouchEnd(event) {
 
 // 处理鼠标释放事件（用于桌面测试）
 function handleMouseUp(event) {
-    // 清除长按计时器
-    if (gameState.longPressTimer) {
-        clearTimeout(gameState.longPressTimer);
-        gameState.longPressTimer = null;
-    }
-    
     // 移除所有活动状态
     document.querySelectorAll('.touch-active').forEach(cell => {
         cell.classList.remove('touch-active');
     });
     
-    // 计算触摸持续时间
-    const touchDuration = Date.now() - gameState.touchStartTime;
-    
-    // 如果是短按（少于500ms），则尝试移动到该位置
-    if (touchDuration < 500 && gameState.touchPosition) {
+    // 处理点击操作
+    if (gameState.touchPosition) {
         handleCellTouch(gameState.touchPosition.x, gameState.touchPosition.y);
     }
     
@@ -600,25 +565,7 @@ function handleMouseUp(event) {
     gameState.touchStartTime = 0;
 }
 
-// 处理长按事件
-function handleLongPress(cell) {
-    const x = parseInt(cell.dataset.x);
-    const y = parseInt(cell.dataset.y);
-    
-    // 如果长按的是玩家当前位置，则挖掘当前方块
-    if (x === gameState.playerPosition.x && y === gameState.playerPosition.y) {
-        mineBlock();
-        
-        // 添加挖掘动画效果
-        cell.style.animation = 'mineAnimation 0.3s';
-        setTimeout(() => {
-            cell.style.animation = '';
-        }, 300);
-    }
-    
-    // 清除长按计时器
-    gameState.longPressTimer = null;
-}
+
 
 // 自定义弹窗函数
 function showCustomDialog(title, message, onConfirm, showCancel = true) {
