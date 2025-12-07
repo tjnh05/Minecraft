@@ -42,7 +42,7 @@ const MOB_TYPES = {
 };
 
 // 游戏版本配置
-const GAME_VERSION = '1.0.9';
+const GAME_VERSION = '1.0.10';
 const GAME_VERSION_KEY = 'gameVersion';
 
 // 新手引导配置
