@@ -41,6 +41,10 @@ const MOB_TYPES = {
     ZOMBIE: 'zombie'
 };
 
+// 游戏版本配置
+const GAME_VERSION = '1.0.0';
+const GAME_VERSION_KEY = 'gameVersion';
+
 // 新手引导配置
 function getTutorialSteps() {
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -1834,8 +1838,12 @@ function initTutorial() {
     // 检查用户是否已经看过引导
     tutorialState.hasSeenTutorial = localStorage.getItem('tutorialCompleted') === 'true';
     
-    // 如果用户已经看过引导，则不再显示
-    if (tutorialState.hasSeenTutorial) {
+    // 检查游戏版本，如果版本不同则强制显示引导
+    const lastGameVersion = localStorage.getItem(GAME_VERSION_KEY);
+    const shouldShowTutorial = !tutorialState.hasSeenTutorial || lastGameVersion !== GAME_VERSION;
+    
+    // 如果用户已经看过引导且版本相同，则不再显示
+    if (!shouldShowTutorial) {
         return;
     }
     
@@ -1931,6 +1939,7 @@ function closeTutorial() {
     
     // 标记用户已完成引导
     localStorage.setItem('tutorialCompleted', 'true');
+    localStorage.setItem(GAME_VERSION_KEY, GAME_VERSION);
     tutorialState.hasSeenTutorial = true;
     
     // 清除高亮
