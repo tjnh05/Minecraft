@@ -25,7 +25,7 @@ body {
     background-color: #444;
     border-radius: 8px;
     padding: 20px;
-    max-width: calc(100vw - 40px);
+    max-width: 90vw;
     max-height: 80%;
     width: fit-content;
     overflow-y: auto;
