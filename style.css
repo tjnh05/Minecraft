@@ -28,11 +28,36 @@ body {
     max-width: 100vw;
     max-height: 80%;
     width: 75vw;
+    min-width: 300px;
     overflow-y: auto;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     border: 1px solid #555;
     animation: slideIn 0.3s ease-out;
     z-index: 1001;
+}
+
+/* 大屏幕上使用自适应宽度 */
+@media (min-width: 1200px) {
+    .tutorial-content {
+        width: fit-content;
+        max-width: 800px;
+    }
+}
+
+/* 中等屏幕上使用80%宽度 */
+@media (min-width: 768px) and (max-width: 1199px) {
+    .tutorial-content {
+        width: 80vw;
+        max-width: 700px;
+    }
+}
+
+/* 小屏幕上保持75vw */
+@media (max-width: 767px) {
+    .tutorial-content {
+        width: 75vw;
+        min-width: 280px;
+    }
 }
 
 .tutorial-header {
@@ -907,6 +932,50 @@ button:active {
 }
 
 .author-info:hover .author-name {
+    opacity: 1;
+}
+
+.version-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #64B5F6;
+    font-weight: 500;
+    text-shadow: 0 0 3px rgba(100, 181, 246, 0.3);
+    font-size: clamp(11px, 2.2vw, 13px);
+    margin: 8px 0 0 0;
+    padding: 5px 10px;
+    background: linear-gradient(135deg, rgba(100, 181, 246, 0.05), rgba(100, 181, 246, 0.02));
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.version-info:hover {
+    color: #90CAF9;
+    text-shadow: 0 0 5px rgba(100, 181, 246, 0.5);
+    background: linear-gradient(135deg, rgba(100, 181, 246, 0.08), rgba(100, 181, 246, 0.04));
+}
+
+.version-icon {
+    font-size: clamp(12px, 2.2vw, 14px);
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.version-info:hover .version-icon {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.version-text {
+    position: relative;
+    z-index: 1;
+    opacity: 0.9;
+    transition: all 0.3s ease;
+}
+
+.version-info:hover .version-text {
     opacity: 1;
 }
 

@@ -42,7 +42,7 @@ const MOB_TYPES = {
 };
 
 // 游戏版本配置
-const GAME_VERSION = '1.0.16';
+const GAME_VERSION = '1.0.15';
 const GAME_VERSION_KEY = 'gameVersion';
 
 // 新手引导配置
@@ -2217,6 +2217,12 @@ function updateHelpBestTimeDisplay() {
         } else {
             helpBestTimeElement.textContent = '--:--';
         }
+    }
+    
+    // 更新版本号显示
+    const gameVersionElement = document.getElementById('gameVersionDisplay');
+    if (gameVersionElement) {
+        gameVersionElement.textContent = GAME_VERSION;
     }
 }
 
