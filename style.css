@@ -22,7 +22,7 @@ body {
 }
 
 .tutorial-content {
-    background-color: #444;
+    background-color: rgba(68, 68, 68, 0.85);
     border-radius: 8px;
     padding: 20px;
     max-width: 100vw;
