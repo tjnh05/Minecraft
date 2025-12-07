@@ -41,6 +41,146 @@ const MOB_TYPES = {
     ZOMBIE: 'zombie'
 };
 
+// 新手引导配置
+function getTutorialSteps() {
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // 根据设备类型生成不同的操作方式内容
+    const getControlsContent = () => {
+        if (isMobile || isTouchDevice) {
+            return `
+                <div class="control-group">
+                    <p><strong>📱 触控操作</strong></p>
+                    <ul>
+                        <li>点击相邻方块：移动到该位置</li>
+                        <li>单击玩家位置：挖掘当前方块</li>
+                        <li>轻触其他位置：自动寻路移动</li>
+                    </ul>
+                </div>
+                <div class="control-group">
+                    <p><strong>🔄 特殊操作</strong></p>
+                    <ul>
+                        <li>原路返回：从非空方块可返回上一个安全位置</li>
+                        <li>快捷关闭：弹窗出现时按返回键关闭</li>
+                    </ul>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="control-group">
+                    <p><strong>⌨️ 键盘操作</strong></p>
+                    <ul>
+                        <li>方向键/WASD：移动到相邻方块</li>
+                        <li>空格键：挖掘当前方块</li>
+                        <li>数字键1-5：使用对应道具</li>
+                        <li>空格键/回车键：关闭弹窗（胜利/失败提示）</li>
+                    </ul>
+                </div>
+                <div class="control-group">
+                    <p><strong>🔄 特殊操作</strong></p>
+                    <ul>
+                        <li>原路返回：从非空方块可返回上一个安全位置</li>
+                        <li>快捷关闭：弹窗出现时按空格键或回车键快速关闭</li>
+                    </ul>
+                </div>
+            `;
+        }
+    };
+    
+    return [
+        {
+            id: 1,
+            title: "欢迎来到Minecraft矿洞探险！",
+            content: `
+                <div class="tutorial-step">
+                    <h4>🎯 游戏目标</h4>
+                    <p>在限定时间内消灭所有怪物获得胜利，收集钻石资源，挑战最快纪录！</p>
+                </div>
+            `,
+            highlightElement: null,
+            position: 'center'
+        },
+        {
+            id: 2,
+            title: "选择难度",
+            content: `
+                <div class="tutorial-step">
+                    <h4>🎮 难度选择</h4>
+                    <p>首先选择游戏难度：简单、中等或困难。不同难度会影响时间限制和游戏体验。</p>
+                    <ul>
+                        <li>简单：3分钟，适合新手</li>
+                        <li>中等：2分钟，平衡体验</li>
+                        <li>困难：1分钟，挑战极限</li>
+                    </ul>
+                </div>
+            `,
+            highlightElement: '.difficulty-selection',
+            position: 'bottom'
+        },
+        {
+            id: 3,
+            title: "游戏状态",
+            content: `
+                <div class="tutorial-step">
+                    <h4>📊 游戏状态</h4>
+                    <p>这里显示你的游戏状态信息：</p>
+                    <ul>
+                        <li>❤️ 生命值：被怪物攻击会减少</li>
+                        <li>⏱️ 剩余时间：在时间结束前完成任务</li>
+                        <li>🏆 最佳纪录：你的最快完成时间</li>
+                    </ul>
+                </div>
+            `,
+            highlightElement: '.stats',
+            position: 'bottom'
+        },
+        {
+            id: 4,
+            title: "操作方式",
+            content: `
+                <div class="tutorial-step">
+                    <h4>🎮 操作方式</h4>
+                    ${getControlsContent()}
+                </div>
+            `,
+            highlightElement: '#gameBoard',
+            position: 'center'
+        },
+        {
+            id: 5,
+            title: "开始游戏！",
+            content: `
+                <div class="tutorial-step">
+                    <h4>🚀 准备开始</h4>
+                    <p>现在你已经了解了基本操作，开始你的矿洞探险吧！</p>
+                    <div class="tips">
+                        <p><strong>💡 小贴士：</strong></p>
+                        <ul>
+                            <li>绿色笑脸😊表示可以自由移动</li>
+                            <li>橙色镐子⛏️表示需要挖掘才能移动</li>
+                            <li>避开岩浆方块，它们会立即结束游戏</li>
+                            <li>收集金苹果可以恢复生命值</li>
+                        </ul>
+                    </div>
+                    <p style="margin-top: 15px; text-align: center; font-weight: bold; color: #4CAF50;">
+                        祝你游戏愉快！🎮
+                    </p>
+                </div>
+            `,
+            highlightElement: null,
+            position: 'center'
+        }
+    ];
+}
+
+// 新手引导状态
+let tutorialState = {
+    isActive: false,
+    currentStep: 0,
+    hasSeenTutorial: false
+};
+
 // 统计配置
 const ANALYTICS_CONFIG = {
     baidu: {
@@ -260,6 +400,11 @@ function initGame() {
     console.log('初始化游戏...');
     loadBestTime(); // 加载最佳纪录
     createBoard();
+    
+    // 初始化新手引导
+    setTimeout(() => {
+        initTutorial();
+    }, 500); // 延迟500ms确保页面完全渲染
     
     // 确保玩家初始位置是空方块，以便能够移动
     if (gameState.board && gameState.board[gameState.playerPosition.y]) {
@@ -1682,6 +1827,115 @@ function resetGame() {
     updateStats();
     updateTimerDisplay(); // 更新计时器显示
     updateBestTimeDisplay(); // 更新最佳纪录显示
+}
+
+// 新手引导功能
+function initTutorial() {
+    // 检查用户是否已经看过引导
+    tutorialState.hasSeenTutorial = localStorage.getItem('tutorialCompleted') === 'true';
+    
+    // 如果用户已经看过引导，则不再显示
+    if (tutorialState.hasSeenTutorial) {
+        return;
+    }
+    
+    // 获取引导相关元素
+    const tutorialOverlay = document.getElementById('tutorialOverlay');
+    const skipBtn = document.getElementById('skipTutorial');
+    const prevBtn = document.getElementById('prevStep');
+    const nextBtn = document.getElementById('nextStep');
+    
+    // 显示引导
+    showTutorialStep(0);
+    tutorialOverlay.style.display = 'flex';
+    tutorialState.isActive = true;
+    
+    // 事件监听
+    skipBtn.addEventListener('click', () => {
+        closeTutorial();
+    });
+    
+    prevBtn.addEventListener('click', () => {
+        if (tutorialState.currentStep > 0) {
+            tutorialState.currentStep--;
+            showTutorialStep(tutorialState.currentStep);
+        }
+    });
+    
+    nextBtn.addEventListener('click', () => {
+        const tutorialSteps = getTutorialSteps();
+        if (tutorialState.currentStep < tutorialSteps.length - 1) {
+            tutorialState.currentStep++;
+            showTutorialStep(tutorialState.currentStep);
+        } else {
+            // 最后一步，关闭引导
+            closeTutorial();
+        }
+    });
+}
+
+function showTutorialStep(stepIndex) {
+    const tutorialSteps = getTutorialSteps();
+    const step = tutorialSteps[stepIndex];
+    const tutorialTitle = document.getElementById('tutorialTitle');
+    const tutorialBody = document.getElementById('tutorialBody');
+    const prevBtn = document.getElementById('prevStep');
+    const nextBtn = document.getElementById('nextStep');
+    const stepIndicator = document.getElementById('stepIndicator');
+    const highlight = document.querySelector('.tutorial-highlight');
+    
+    // 更新内容
+    tutorialTitle.textContent = step.title;
+    tutorialBody.innerHTML = step.content;
+    stepIndicator.textContent = `${stepIndex + 1} / ${tutorialSteps.length}`;
+    
+    // 更新按钮状态
+    prevBtn.style.display = stepIndex === 0 ? 'none' : 'block';
+    nextBtn.textContent = stepIndex === tutorialSteps.length - 1 ? '开始游戏' : '下一步';
+    
+    // 高亮元素
+    if (step.highlightElement) {
+        const element = document.querySelector(step.highlightElement);
+        if (element) {
+            const rect = element.getBoundingClientRect();
+            highlight.style.display = 'block';
+            highlight.style.left = `${rect.left}px`;
+            highlight.style.top = `${rect.top}px`;
+            highlight.style.width = `${rect.width}px`;
+            highlight.style.height = `${rect.height}px`;
+        }
+    } else {
+        highlight.style.display = 'none';
+    }
+    
+    // 根据位置调整引导框位置
+    const tutorialContent = document.querySelector('.tutorial-content');
+    if (step.position === 'center') {
+        tutorialContent.style.position = 'fixed';
+        tutorialContent.style.top = '50%';
+        tutorialContent.style.left = '50%';
+        tutorialContent.style.transform = 'translate(-50%, -50%)';
+    } else if (step.position === 'bottom') {
+        tutorialContent.style.position = 'fixed';
+        tutorialContent.style.top = 'auto';
+        tutorialContent.style.bottom = '20px';
+        tutorialContent.style.left = '50%';
+        tutorialContent.style.transform = 'translateX(-50%)';
+    }
+}
+
+function closeTutorial() {
+    const tutorialOverlay = document.getElementById('tutorialOverlay');
+    tutorialOverlay.style.display = 'none';
+    tutorialState.isActive = false;
+    
+    // 标记用户已完成引导
+    localStorage.setItem('tutorialCompleted', 'true');
+    tutorialState.hasSeenTutorial = true;
+    
+    // 清除高亮
+    const highlight = document.querySelector('.tutorial-highlight');
+    highlight.style.display = 'none';
 }
 
 // 页面加载完成后初始化游戏
